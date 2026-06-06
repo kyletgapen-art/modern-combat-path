@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Modern Combat Path</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%; width: 100%;
+      overflow: hidden;
+      background: #0d0505;
+      font-family: 'Courier New', 'Lucida Console', monospace;
+    }
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    /* ── Grid ── */
+    .bg-grid {
+      position: absolute; inset: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(230,57,70,0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(230,57,70,0.045) 1px, transparent 1px);
+      background-size: 52px 52px;
+    }
+
+    /* ── Scan lines ── */
+    .bg-scanlines {
+      position: absolute; inset: 0; pointer-events: none;
+      background-image: repeating-linear-gradient(
+        0deg, transparent, transparent 3px,
+        rgba(0,0,0,0.18) 3px, rgba(0,0,0,0.18) 4px
+      );
+    }
+
+    /* ── Centre radial glow ── */
+    .bg-glow {
+      position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse 55% 55% at 50% 50%,
+        rgba(230,57,70,0.09) 0%, transparent 70%);
+    }
+
+    /* ── Animated sweep line ── */
+    .sweep {
+      position: absolute; left: 0; right: 0;
+      height: 2px; pointer-events: none;
+      background: linear-gradient(to right,
+        transparent 0%, rgba(230,57,70,0.0) 20%,
+        rgba(230,57,70,0.22) 50%,
+        rgba(230,57,70,0.0) 80%, transparent 100%);
+      animation: sweepDown 6s linear infinite;
+    }
+    @keyframes sweepDown {
+      from { top: -4px; }
+      to   { top: 103%; }
+    }
+
+    /* ── Targeting reticle ── */
+    .reticle {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: min(90vw, 90vh);
+      height: min(90vw, 90vh);
+      opacity: 0.07;
+      pointer-events: none;
+      animation: reticleRotate 60s linear infinite;
+    }
+    @keyframes reticleRotate {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to   { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    /* ── HUD data blocks ── */
+    .hud {
+      position: absolute; inset: 0; pointer-events: none;
+      font-size: clamp(0.52rem, 1vw, 0.68rem);
+      color: rgba(230,57,70,0.28);
+      letter-spacing: 0.08em;
+      line-height: 1.9;
+      text-transform: uppercase;
+    }
+
+    .hud-block { position: absolute; }
+
+    .hud-tl { top: 64px; left: 68px; }
+    .hud-tr { top: 64px; right: 68px; text-align: right; }
+    .hud-bl { bottom: 64px; left: 68px; }
+    .hud-br { bottom: 64px; right: 68px; text-align: right; }
+
+    .hud-label { color: rgba(230,57,70,0.16); margin-right: 6px; }
+    .hud-val   { color: rgba(230,57,70,0.38); }
+    .hud-dot   { color: rgba(230,57,70,0.18); }
+
+    /* blinking cursor effect on one item */
+    .blink { animation: blink 1.4s step-end infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* ── Status bar — top ── */
+    .status-bar {
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 28px;
+      border-bottom: 1px solid rgba(230,57,70,0.12);
+      background: rgba(230,57,70,0.03);
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      font-size: 0.58rem; letter-spacing: 0.12em;
+      color: rgba(230,57,70,0.22);
+      pointer-events: none;
+    }
+    .status-bar-bot {
+      top: auto; bottom: 0;
+      border-top: 1px solid rgba(230,57,70,0.12);
+      border-bottom: none;
+    }
+
+    /* ── Corner brackets (larger, bolder) ── */
+    .corner {
+      position: absolute; width: 42px; height: 42px;
+      border-color: rgba(230,57,70,0.35); border-style: solid;
+    }
+    .corner-tl { top:28px; left:28px;   border-width:1px 0 0 1px; }
+    .corner-tr { top:28px; right:28px;  border-width:1px 1px 0 0; }
+    .corner-bl { bottom:28px; left:28px;  border-width:0 0 1px 1px; }
+    .corner-br { bottom:28px; right:28px; border-width:0 1px 1px 0; }
+
+    /* ── Vertical side rules ── */
+    .side-rule {
+      position: absolute; top: 80px; bottom: 80px; width: 1px;
+      background: linear-gradient(to bottom,
+        transparent, rgba(230,57,70,0.1) 30%,
+        rgba(230,57,70,0.1) 70%, transparent);
+      pointer-events: none;
+    }
+    .side-rule-l { left: 28px; }
+    .side-rule-r { right: 28px; }
+
+    /* ── Main content ── */
+    .content {
+      position: relative; z-index: 10;
+      text-align: center; padding: 20px;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      animation: contentRise 1.4s ease 0.2s both;
+    }
+    @keyframes contentRise {
+      from { opacity:0; transform:translateY(16px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    .rule {
+      width: 80px; height: 1px; margin: 0 auto;
+      background: linear-gradient(to right, transparent, rgba(230,57,70,0.55), transparent);
+    }
+
+    .word-modern {
+      display: block; margin: 18px 0 5px;
+      font-size: clamp(0.9rem, 3.2vw, 2rem);
+      font-weight: 300; letter-spacing: 0.6em;
+      color: rgba(245,238,238,0.58);
+      text-transform: uppercase;
+    }
+    .word-combat {
+      display: block;
+      font-size: clamp(3.5rem, 12.5vw, 9.5rem);
+      font-weight: 900; letter-spacing: 0.06em;
+      color: #e63946; text-transform: uppercase; line-height: 0.88;
+      text-shadow:
+        0 0 30px rgba(230,57,70,0.40),
+        0 0 70px rgba(230,57,70,0.18),
+        0 0 120px rgba(230,57,70,0.08);
+    }
+    .word-path {
+      display: block; margin: 5px 0 18px;
+      font-size: clamp(0.9rem, 3.2vw, 2rem);
+      font-weight: 300; letter-spacing: 0.6em;
+      color: rgba(245,238,238,0.58);
+      text-transform: uppercase;
+    }
+
+    .catchphrase {
+      font-family: 'Courier New', monospace;
+      font-size: clamp(0.55rem, 1.3vw, 0.74rem);
+      color: rgba(180,120,120,0.75);
+      letter-spacing: 0.28em; text-transform: uppercase;
+      margin: 24px 0 42px;
+    }
+
+    .enter-btn {
+      display: inline-block; padding: 12px 50px;
+      border: 1px solid rgba(230,57,70,0.42);
+      color: rgba(245,238,238,0.72); text-decoration: none;
+      font-family: 'Courier New', monospace;
+      font-size: 0.7rem; letter-spacing: 0.42em; text-transform: uppercase;
+      transition: all 0.3s ease; position: relative; overflow: hidden;
+      animation: pulseBorder 3.5s ease-in-out infinite;
+    }
+    .enter-btn::before {
+      content: ''; position: absolute;
+      left: -100%; top: 0; width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(230,57,70,0.08), transparent);
+      transition: left 0.4s ease;
+    }
+    .enter-btn:hover { border-color: rgba(230,57,70,0.9); color: #fff; animation: none;
+      text-shadow: 0 0 10px rgba(230,57,70,0.5); }
+    .enter-btn:hover::before { left: 100%; }
+    @keyframes pulseBorder {
+      0%,100% { border-color: rgba(230,57,70,0.38); }
+      50%      { border-color: rgba(230,57,70,0.72); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background layers -->
+  <div class="bg-grid"></div>
+  <div class="bg-scanlines"></div>
+  <div class="bg-glow"></div>
+  <div class="sweep"></div>
+
+  <!-- Targeting reticle -->
+  <svg class="reticle" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#e63946">
+    <circle cx="400" cy="400" r="370" stroke-width="0.8"/>
+    <circle cx="400" cy="400" r="280" stroke-width="0.8"/>
+    <circle cx="400" cy="400" r="190" stroke-width="1.2"/>
+    <circle cx="400" cy="400" r="100" stroke-width="1.2"/>
+    <circle cx="400" cy="400" r="22"  stroke-width="1.5"/>
+    <!-- Crosshair lines with gap at center -->
+    <line x1="0"   y1="400" x2="268" y2="400" stroke-width="0.8"/>
+    <line x1="532" y1="400" x2="800" y2="400" stroke-width="0.8"/>
+    <line x1="400" y1="0"   x2="400" y2="268" stroke-width="0.8"/>
+    <line x1="400" y1="532" x2="400" y2="800" stroke-width="0.8"/>
+    <!-- Diagonal marks at 45° -->
+    <line x1="220" y1="220" x2="248" y2="248" stroke-width="0.8"/>
+    <line x1="580" y1="220" x2="552" y2="248" stroke-width="0.8"/>
+    <line x1="220" y1="580" x2="248" y2="552" stroke-width="0.8"/>
+    <line x1="580" y1="580" x2="552" y2="552" stroke-width="0.8"/>
+    <!-- Tick marks on outer ring — every 30° -->
+    <line x1="400" y1="30"  x2="400" y2="52"  stroke-width="1"/>
+    <line x1="585" y1="80"  x2="574" y2="99"  stroke-width="1"/>
+    <line x1="720" y1="215" x2="701" y2="226" stroke-width="1"/>
+    <line x1="770" y1="400" x2="748" y2="400" stroke-width="1"/>
+    <line x1="720" y1="585" x2="701" y2="574" stroke-width="1"/>
+    <line x1="585" y1="720" x2="574" y2="701" stroke-width="1"/>
+    <line x1="400" y1="770" x2="400" y2="748" stroke-width="1"/>
+    <line x1="215" y1="720" x2="226" y2="701" stroke-width="1"/>
+    <line x1="80"  y1="585" x2="99"  y2="574" stroke-width="1"/>
+    <line x1="30"  y1="400" x2="52"  y2="400" stroke-width="1"/>
+    <line x1="80"  y1="215" x2="99"  y2="226" stroke-width="1"/>
+    <line x1="215" y1="80"  x2="226" y2="99"  stroke-width="1"/>
+  </svg>
+
+  <!-- Status bars -->
+  <div class="status-bar">
+    <span>MCP // SYSTEM ONLINE</span>
+    <span>ACCESS LEVEL: OPERATOR</span>
+    <span>AUTHENTICATION: VERIFIED</span>
+    <span>ENC: AES-256</span>
+  </div>
+  <div class="status-bar status-bar-bot">
+    <span>MODULE: COMBAT TRAINING</span>
+    <span>38°54'17"N &nbsp; 77°00'32"W</span>
+    <span>BUILD v2.1.0</span>
+    <span>STATUS: <span class="hud-val">READY</span></span>
+  </div>
+
+  <!-- Corner brackets -->
+  <div class="corner corner-tl"></div>
+  <div class="corner corner-tr"></div>
+  <div class="corner corner-bl"></div>
+  <div class="corner corner-br"></div>
+
+  <!-- Vertical side rules -->
+  <div class="side-rule side-rule-l"></div>
+  <div class="side-rule side-rule-r"></div>
+
+  <!-- HUD data blocks -->
+  <div class="hud">
+    <div class="hud-block hud-tl">
+      <div><span class="hud-label">MISSION</span><span class="hud-dot">............</span><span class="hud-val">ACTIVE</span></div>
+      <div><span class="hud-label">THREAT LVL</span><span class="hud-dot">.........</span><span class="hud-val">HIGH</span></div>
+      <div><span class="hud-label">PROTOCOL</span><span class="hud-dot">..........</span><span class="hud-val">COMBAT</span></div>
+      <div style="margin-top:8px"><span class="hud-label">DISCIPLINES LOADED</span><span class="hud-dot">.</span><span class="hud-val">4</span></div>
+    </div>
+    <div class="hud-block hud-tr">
+      <div><span class="hud-val">PT TESTS</span><span class="hud-dot">.........</span><span class="hud-label">7 LOADED</span></div>
+      <div><span class="hud-val">FIGHT MODES</span><span class="hud-dot">.....</span><span class="hud-label">3 LOADED</span></div>
+      <div><span class="hud-val">GEN FITNESS</span><span class="hud-dot">.....</span><span class="hud-label">7 LOADED</span></div>
+      <div style="margin-top:8px"><span class="hud-val">PLAN GEN</span><span class="hud-dot">.........</span><span class="hud-label">ONLINE <span class="blink">_</span></span></div>
+    </div>
+    <div class="hud-block hud-bl">
+      <div><span class="hud-label">MAX PLAN WEEKS</span><span class="hud-dot">...</span><span class="hud-val">08</span></div>
+      <div><span class="hud-label">PHASES</span><span class="hud-dot">..........…</span><span class="hud-val">5</span></div>
+      <div><span class="hud-label">REST INTERVAL</span><span class="hud-dot">.….</span><span class="hud-val">25–60 SEC</span></div>
+    </div>
+    <div class="hud-block hud-br">
+      <div><span class="hud-val">PROGRESSIVE</span><span class="hud-dot">......</span><span class="hud-label">ENABLED</span></div>
+      <div><span class="hud-val">PDF EXPORT</span><span class="hud-dot">....….</span><span class="hud-label">ENABLED</span></div>
+      <div><span class="hud-val">CUSTOM TESTS</span><span class="hud-dot">..….</span><span class="hud-label">ENABLED</span></div>
+    </div>
+  </div>
+
+  <!-- ── Main content ── -->
+  <div class="content">
+    <div class="rule"></div>
+    <span class="word-modern">Modern</span>
+    <span class="word-combat">Combat</span>
+    <span class="word-path">Path</span>
+    <div class="rule"></div>
+    <div class="catchphrase">Train with purpose &nbsp;·&nbsp; Fight ready</div>
+    <a href="index.html" class="enter-btn">Enter &nbsp;→</a>
+  </div>
+
+</body>
+</html>

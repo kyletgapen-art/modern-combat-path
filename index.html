@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modern Combat Path</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <h1 class="logo" onclick="showScreen('home')">MODERN COMBAT PATH</h1>
+    <p class="tagline">Train with purpose. Fight ready.</p>
+  </header>
+
+  <!-- HOME -->
+  <div id="screen-home" class="screen active">
+    <div class="card-grid three-col">
+      <div class="path-card" onclick="showScreen('pt-select')">
+        <div class="card-icon">🎖️</div>
+        <h2>PT Test Prep</h2>
+        <p>Military and law enforcement fitness tests</p>
+      </div>
+      <div class="path-card" onclick="showScreen('fight-select')">
+        <div class="card-icon">🥊</div>
+        <h2>Fight Night</h2>
+        <p>Combat sports conditioning for fight camp or competition</p>
+      </div>
+      <div class="path-card" onclick="showScreen('general-select')">
+        <div class="card-icon">💪</div>
+        <h2>General Fitness</h2>
+        <p>Targeted workouts for every fitness goal</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PT TEST SELECTION -->
+  <div id="screen-pt-select" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('home')">← Back</button>
+      <h2>Select Your PT Test</h2>
+    </div>
+    <div class="option-grid">
+      <div class="option-card" onclick="selectTest('army-acft')"><strong>Army</strong><span>ACFT</span></div>
+      <div class="option-card" onclick="selectTest('marine-pft')"><strong>Marines</strong><span>PFT / CFT</span></div>
+      <div class="option-card" onclick="selectTest('navy-prt')"><strong>Navy</strong><span>PRT</span></div>
+      <div class="option-card" onclick="selectTest('airforce-fa')"><strong>Air Force</strong><span>Fitness Assessment</span></div>
+      <div class="option-card" onclick="selectTest('coastguard-pt')"><strong>Coast Guard</strong><span>PT Test</span></div>
+      <div class="option-card" onclick="selectTest('spacforce-fa')"><strong>Space Force</strong><span>Fitness Assessment</span></div>
+      <div class="option-card" onclick="selectTest('ntoa-pt')"><strong>Law Enforcement</strong><span>NTOA PT Test</span></div>
+      <div class="option-card highlight" onclick="showScreen('custom-test')"><strong>Custom</strong><span>Build Your Own Test</span></div>
+    </div>
+  </div>
+
+  <!-- FIGHT NIGHT SELECTION -->
+  <div id="screen-fight-select" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('home')">← Back</button>
+      <h2>Select Your Discipline</h2>
+    </div>
+    <div class="option-grid">
+      <div class="option-card" onclick="selectFight('muay-thai')"><strong>Muay Thai</strong><span>8 limbs</span></div>
+      <div class="option-card" onclick="selectFight('bjj')"><strong>BJJ</strong><span>Ground & submission</span></div>
+      <div class="option-card" onclick="selectFight('judo')"><strong>Judo</strong><span>Throws & grappling</span></div>
+    </div>
+  </div>
+
+  <!-- GENERAL FITNESS SELECTION -->
+  <div id="screen-general-select" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('home')">← Back</button>
+      <h2>Select Your Focus</h2>
+    </div>
+    <div class="option-grid">
+      <div class="option-card" onclick="selectGeneral('cardio')"><strong>Cardio</strong><span>Endurance & aerobic base</span></div>
+      <div class="option-card" onclick="selectGeneral('upper-body')"><strong>Upper Body</strong><span>Push, pull, press</span></div>
+      <div class="option-card" onclick="selectGeneral('lower-body')"><strong>Lower Body</strong><span>Squat, hinge, lunge</span></div>
+      <div class="option-card" onclick="selectGeneral('core')"><strong>Core</strong><span>Stability & strength</span></div>
+      <div class="option-card" onclick="selectGeneral('hiit')"><strong>HIIT</strong><span>High intensity conditioning</span></div>
+      <div class="option-card" onclick="selectGeneral('hyrox')"><strong>HYROX</strong><span>Race prep & simulation</span></div>
+      <div class="option-card" onclick="selectGeneral('crossfit')"><strong>CrossFit-Style</strong><span>WODs & functional fitness</span></div>
+    </div>
+  </div>
+
+  <!-- PLAN OPTIONS (single workout vs plan) -->
+  <div id="screen-plan-options" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" id="plan-options-back">← Back</button>
+      <h2 id="plan-options-title">What would you like?</h2>
+    </div>
+    <div class="card-grid">
+      <div class="path-card" onclick="goToSingleWorkout()">
+        <div class="card-icon">⚡</div>
+        <h2>Single Workout</h2>
+        <p>Generate one session for today</p>
+      </div>
+      <div class="path-card" onclick="goToPlanBuilder()">
+        <div class="card-icon">📋</div>
+        <h2>Training Plan</h2>
+        <p>Build a progressive plan up to 8 weeks</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SINGLE WORKOUT CUSTOMISE -->
+  <div id="screen-customize" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('plan-options')">← Back</button>
+      <h2 id="customize-title">Customize Your Workout</h2>
+    </div>
+    <form id="customize-form" class="customize-form">
+      <div class="form-group">
+        <label>Fitness Level</label>
+        <div class="btn-group">
+          <button type="button" class="toggle-btn active" data-group="level" data-value="beginner">Beginner</button>
+          <button type="button" class="toggle-btn" data-group="level" data-value="intermediate">Intermediate</button>
+          <button type="button" class="toggle-btn" data-group="level" data-value="advanced">Advanced</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Time Available</label>
+        <div class="btn-group">
+          <button type="button" class="toggle-btn" data-group="time" data-value="30">30 min</button>
+          <button type="button" class="toggle-btn active" data-group="time" data-value="45">45 min</button>
+          <button type="button" class="toggle-btn" data-group="time" data-value="60">60 min</button>
+          <button type="button" class="toggle-btn" data-group="time" data-value="90">90 min</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Equipment</label>
+        <div class="btn-group">
+          <button type="button" class="toggle-btn" data-group="equip" data-value="none">None</button>
+          <button type="button" class="toggle-btn active" data-group="equip" data-value="basic">Basic Gym</button>
+          <button type="button" class="toggle-btn" data-group="equip" data-value="full">Full Gym</button>
+          <button type="button" class="toggle-btn" data-group="equip" data-value="bags">Bags & Pads</button>
+        </div>
+      </div>
+      <div class="form-group" id="single-partner-wrap">
+        <label>Training Partner?</label>
+        <div class="btn-group">
+          <button type="button" class="toggle-btn active" data-group="partner" data-value="no">Solo</button>
+          <button type="button" class="toggle-btn" data-group="partner" data-value="yes">With Partner</button>
+        </div>
+      </div>
+      <button type="button" class="generate-btn" onclick="generateSingleWorkout()">Generate Workout →</button>
+    </form>
+  </div>
+
+  <!-- SINGLE WORKOUT OUTPUT -->
+  <div id="screen-workout" class="screen">
+    <div class="screen-header no-print">
+      <button class="back-btn" onclick="showScreen('customize')">← Customize</button>
+      <h2 id="workout-title">Your Workout</h2>
+    </div>
+    <div id="workout-output"></div>
+    <div class="workout-actions no-print">
+      <button class="action-btn" onclick="generateSingleWorkout()">↺ New Workout</button>
+      <button class="action-btn" onclick="window.print()">🖨 Save as PDF</button>
+    </div>
+  </div>
+
+  <!-- PLAN BUILDER -->
+  <div id="screen-plan-builder" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('plan-options')">← Back</button>
+      <h2 id="plan-builder-title">Build Your Plan</h2>
+    </div>
+    <form class="customize-form">
+      <div class="form-group">
+        <label>Number of Weeks</label>
+        <div class="btn-group">
+          <button type="button" class="toggle-btn" data-group="planWeeks" data-value="1">1</button>
+          <button type="button" class="toggle-btn" data-group="planWeeks" data-value="2">2</button>
+          <button type="button" class="toggle-btn" data-group="planWeeks" data-value="3">3</button>
+          <button type="button" class="toggle-btn active" data-group="planWeeks" data-value="4">4</button>
+          <button type="button" class="toggle-btn" data-group="planWeeks" data-value="5">5</button>
+          <button type="button" class="toggle-btn" data-group="planWeeks" data-value="6">6</button>
+          <button type="button" class="toggle-btn" data-group="planWeeks" data-value="7">7</button>
+          <button type="button" class="toggle-btn" data-group="planWeeks" data-value="8">8</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Training Days Per Week</label>
+        <div class="btn-group">
+          <button type="button" class="toggle-btn active" data-group="planDays" data-value="3">3 days</button>
+          <button type="button" class="toggle-btn" data-group="planDays" data-value="4">4 days</button>
+          <button type="button" class="toggle-btn" data-group="planDays" data-value="5">5 days</button>
+          <button type="button" class="toggle-btn" data-group="planDays" data-value="6">6 days</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Session Length</label>
+        <div class="btn-group">
+          <button type="button" class="toggle-btn" data-group="planTime" data-value="30">30 min</button>
+          <button type="button" class="toggle-btn active" data-group="planTime" data-value="45">45 min</button>
+          <button type="button" class="toggle-btn" data-group="planTime" data-value="60">60 min</button>
+          <button type="button" class="toggle-btn" data-group="planTime" data-value="90">90 min</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Fitness Level</label>
+        <div class="btn-group">
+          <button type="button" class="toggle-btn active" data-group="planLevel" data-value="beginner">Beginner</button>
+          <button type="button" class="toggle-btn" data-group="planLevel" data-value="intermediate">Intermediate</button>
+          <button type="button" class="toggle-btn" data-group="planLevel" data-value="advanced">Advanced</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Equipment</label>
+        <div class="btn-group">
+          <button type="button" class="toggle-btn" data-group="planEquip" data-value="none">None</button>
+          <button type="button" class="toggle-btn active" data-group="planEquip" data-value="basic">Basic Gym</button>
+          <button type="button" class="toggle-btn" data-group="planEquip" data-value="full">Full Gym</button>
+          <button type="button" class="toggle-btn" data-group="planEquip" data-value="bags">Bags & Pads</button>
+        </div>
+      </div>
+      <div class="form-group" id="plan-partner-wrap">
+        <label>Training Partner?</label>
+        <div class="btn-group">
+          <button type="button" class="toggle-btn active" data-group="planPartner" data-value="no">Solo</button>
+          <button type="button" class="toggle-btn" data-group="planPartner" data-value="yes">With Partner</button>
+        </div>
+      </div>
+      <button type="button" class="generate-btn" onclick="buildPlan()">Generate My Plan →</button>
+    </form>
+  </div>
+
+  <!-- PLAN OUTPUT -->
+  <div id="screen-plan-output" class="screen">
+    <div class="screen-header no-print">
+      <button class="back-btn" onclick="showScreen('plan-builder')">← Back</button>
+      <h2 id="plan-output-title">Your Training Plan</h2>
+    </div>
+    <div class="workout-actions no-print" style="margin-bottom:24px">
+      <button class="action-btn" onclick="buildPlan()">↺ Regenerate</button>
+      <button class="action-btn" onclick="printPlan()">🖨 Save as PDF</button>
+    </div>
+    <div id="plan-output"></div>
+  </div>
+
+  <!-- CUSTOM TEST BUILDER -->
+  <div id="screen-custom-test" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('pt-select')">← Back</button>
+      <h2>Build Your PT Test</h2>
+    </div>
+    <div class="custom-test-builder">
+      <p class="helper-text">Add the events in your test. Each event will be included in your training program.</p>
+      <div id="custom-events-list"></div>
+      <div class="add-event-row">
+        <input type="text" id="event-name-input" placeholder="Event name (e.g. Push-ups, 2-mile run)" />
+        <input type="text" id="event-goal-input" placeholder="Goal / standard (e.g. 60 reps, sub 16:00)" />
+        <button type="button" class="add-event-btn" onclick="addCustomEvent()">+ Add</button>
+      </div>
+      <div class="form-group" style="margin-top:24px">
+        <label>Test Name</label>
+        <input type="text" id="custom-test-name" placeholder="My PT Test" class="text-input" />
+      </div>
+      <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap">
+        <button type="button" class="generate-btn" onclick="saveAndTrainCustomTest()">Save & Continue →</button>
+        <button type="button" class="action-btn" onclick="loadSavedTests()">Load Saved Test</button>
+      </div>
+      <div id="saved-tests-panel" style="display:none;margin-top:24px">
+        <h3>Saved Tests</h3>
+        <div id="saved-tests-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="workouts.js"></script>
+  <script src="plan.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

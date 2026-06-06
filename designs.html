@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Modern Combat — Design Options</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #111;
+      color: #fff;
+      padding: 32px 16px 60px;
+    }
+    h1 { text-align:center; font-size:1.4rem; letter-spacing:0.2em; color:#aaa; margin-bottom:8px; }
+    .subtitle { text-align:center; color:#555; font-size:0.85rem; margin-bottom:40px; }
+
+    .designs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 32px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .design-block { display:flex; flex-direction:column; gap:12px; }
+    .design-label {
+      font-size:0.75rem; letter-spacing:0.15em; text-transform:uppercase;
+      color:#aaa; font-weight:700;
+    }
+    .design-name { font-size:1.1rem; font-weight:800; }
+    .design-desc { font-size:0.82rem; color:#777; line-height:1.5; }
+
+    .preview {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #333;
+    }
+
+    /* ─── OPTION 1: TACTICAL (Current) ─── */
+    .tactical {
+      --bg: #0a0a0a; --surf: #141414; --surf2: #1e1e1e;
+      --border: #2a2a2a; --accent: #c8a84b; --text: #f0f0f0; --muted: #888;
+    }
+    /* ─── OPTION 2: COMBAT RED ─── */
+    .combat-red {
+      --bg: #0d0505; --surf: #170808; --surf2: #200d0d;
+      --border: #3a1515; --accent: #e63946; --text: #f5f0f0; --muted: #8a7070;
+    }
+    /* ─── OPTION 3: STEEL BLUE ─── */
+    .steel {
+      --bg: #080d14; --surf: #0f1923; --surf2: #162234;
+      --border: #1e3048; --accent: #4f9cf9; --text: #e8f0f8; --muted: #6a8099;
+    }
+    /* ─── OPTION 4: GHOST (Light) ─── */
+    .ghost {
+      --bg: #f2f2f2; --surf: #ffffff; --surf2: #e8e8e8;
+      --border: #d0d0d0; --accent: #111111; --text: #111111; --muted: #666666;
+    }
+    /* ─── OPTION 5: OPERATOR GREEN ─── */
+    .operator {
+      --bg: #080a06; --surf: #10140c; --surf2: #181d12;
+      --border: #2a3320; --accent: #78a846; --text: #e8f0e0; --muted: #7a8a6a;
+    }
+
+    .preview-inner {
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .p-header {
+      background: var(--surf);
+      border-bottom: 2px solid var(--accent);
+      padding: 14px 18px 10px;
+      text-align: center;
+    }
+    .p-logo {
+      font-size: 1.3rem; font-weight: 900; letter-spacing: 0.18em;
+      color: var(--accent); text-transform: uppercase;
+    }
+    .p-tagline { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.12em; margin-top:3px; }
+
+    .p-body { padding: 16px; display:flex; flex-direction:column; gap:10px; }
+
+    .p-card {
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      display:flex; align-items:center; gap:12px;
+      cursor:pointer;
+      transition: border-color 0.2s;
+    }
+    .p-card:hover { border-color: var(--accent); }
+    .p-card-icon { font-size: 1.4rem; }
+    .p-card-title { font-size: 0.95rem; font-weight:700; }
+    .p-card-sub { font-size: 0.75rem; color: var(--muted); margin-top:2px; }
+
+    .p-workout {
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    .p-workout-header {
+      background: var(--surf2);
+      padding: 8px 14px;
+      font-size: 0.65rem; font-weight:700; letter-spacing:0.12em;
+      text-transform: uppercase; color: var(--accent);
+      border-bottom: 1px solid var(--border);
+    }
+    .p-workout-row {
+      display:flex; justify-content:space-between; align-items:start;
+      padding: 8px 14px; border-bottom: 1px solid var(--border);
+      font-size: 0.8rem;
+    }
+    .p-workout-row:last-child { border-bottom: none; }
+    .p-workout-name { font-weight:600; }
+    .p-workout-note { font-size:0.7rem; color:var(--muted); margin-top:2px; }
+    .p-workout-rx { color: var(--accent); font-size:0.75rem; font-weight:700; white-space:nowrap; }
+
+    .p-badge {
+      display: inline-block;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      font-size: 0.6rem; font-weight:700; letter-spacing:0.1em;
+      padding: 2px 8px; border-radius:20px; text-transform:uppercase;
+      margin-bottom: 8px;
+    }
+
+    .choose-btn {
+      display: block; width:100%; margin-top:12px;
+      background: none; border: 1px solid #444; color: #888;
+      padding: 10px; border-radius: 8px; cursor: pointer;
+      font-size: 0.82rem; letter-spacing:0.1em; text-transform:uppercase;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+    .choose-btn:hover { border-color: #c8a84b; color: #c8a84b; }
+  </style>
+</head>
+<body>
+  <h1>MODERN COMBAT</h1>
+  <p class="subtitle">Design Options — Review and tell me which one you want</p>
+
+  <div class="designs-grid">
+
+    <!-- OPTION 1: TACTICAL GOLD -->
+    <div class="design-block">
+      <div>
+        <div class="design-label">Option 1</div>
+        <div class="design-name" style="color:#c8a84b">Tactical Gold</div>
+        <div class="design-desc">Current design. Black background, gold accents. Military-grade, no-nonsense look.</div>
+      </div>
+      <div class="preview tactical">
+        <div class="preview-inner">
+          <div class="p-header">
+            <div class="p-logo">Modern Combat</div>
+            <div class="p-tagline">Train with purpose. Fight ready.</div>
+          </div>
+          <div class="p-body">
+            <div class="p-card"><div class="p-card-icon">🎖️</div><div><div class="p-card-title">PT Test Prep</div><div class="p-card-sub">Military & law enforcement tests</div></div></div>
+            <div class="p-card"><div class="p-card-icon">🥊</div><div><div class="p-card-title">Fight Night</div><div class="p-card-sub">Combat sports conditioning</div></div></div>
+            <div class="p-card"><div class="p-card-icon">💪</div><div><div class="p-card-title">General Fitness</div><div class="p-card-sub">Targeted workouts</div></div></div>
+            <span class="p-badge">Week 3 · Power</span>
+            <div class="p-workout">
+              <div class="p-workout-header">Bag Work — Muay Thai</div>
+              <div class="p-workout-row"><div><div class="p-workout-name">Jab Cross Hook Rear Kick</div><div class="p-workout-note">Work this combo the full round</div></div><div class="p-workout-rx">3 min · 35 sec rest</div></div>
+              <div class="p-workout-row"><div><div class="p-workout-name">Teep 10-10-20</div><div class="p-workout-note">10 right, 10 left, 20 alternating</div></div><div class="p-workout-rx">3 min · 35 sec rest</div></div>
+              <div class="p-workout-row"><div><div class="p-workout-name">Freestyle</div><div class="p-workout-note">Any combos — keep moving</div></div><div class="p-workout-rx">3 min</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="choose-btn">I want this one →</button>
+    </div>
+
+    <!-- OPTION 2: COMBAT RED -->
+    <div class="design-block">
+      <div>
+        <div class="design-label">Option 2</div>
+        <div class="design-name" style="color:#e63946">Combat Red</div>
+        <div class="design-desc">Deep black-red background, crimson accents. Raw, aggressive energy. Built for fighters.</div>
+      </div>
+      <div class="preview combat-red">
+        <div class="preview-inner">
+          <div class="p-header">
+            <div class="p-logo">Modern Combat</div>
+            <div class="p-tagline">Train with purpose. Fight ready.</div>
+          </div>
+          <div class="p-body">
+            <div class="p-card"><div class="p-card-icon">🎖️</div><div><div class="p-card-title">PT Test Prep</div><div class="p-card-sub">Military & law enforcement tests</div></div></div>
+            <div class="p-card"><div class="p-card-icon">🥊</div><div><div class="p-card-title">Fight Night</div><div class="p-card-sub">Combat sports conditioning</div></div></div>
+            <div class="p-card"><div class="p-card-icon">💪</div><div><div class="p-card-title">General Fitness</div><div class="p-card-sub">Targeted workouts</div></div></div>
+            <span class="p-badge">Week 3 · Power</span>
+            <div class="p-workout">
+              <div class="p-workout-header">Bag Work — Muay Thai</div>
+              <div class="p-workout-row"><div><div class="p-workout-name">Jab Cross Hook Rear Kick</div><div class="p-workout-note">Work this combo the full round</div></div><div class="p-workout-rx">3 min · 35 sec rest</div></div>
+              <div class="p-workout-row"><div><div class="p-workout-name">Teep 10-10-20</div><div class="p-workout-note">10 right, 10 left, 20 alternating</div></div><div class="p-workout-rx">3 min · 35 sec rest</div></div>
+              <div class="p-workout-row"><div><div class="p-workout-name">Freestyle</div><div class="p-workout-note">Any combos — keep moving</div></div><div class="p-workout-rx">3 min</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="choose-btn">I want this one →</button>
+    </div>
+
+    <!-- OPTION 3: STEEL BLUE -->
+    <div class="design-block">
+      <div>
+        <div class="design-label">Option 3</div>
+        <div class="design-name" style="color:#4f9cf9">Steel Blue</div>
+        <div class="design-desc">Deep navy background, electric blue accents. Modern, tech-forward. Clean and athletic.</div>
+      </div>
+      <div class="preview steel">
+        <div class="preview-inner">
+          <div class="p-header">
+            <div class="p-logo">Modern Combat</div>
+            <div class="p-tagline">Train with purpose. Fight ready.</div>
+          </div>
+          <div class="p-body">
+            <div class="p-card"><div class="p-card-icon">🎖️</div><div><div class="p-card-title">PT Test Prep</div><div class="p-card-sub">Military & law enforcement tests</div></div></div>
+            <div class="p-card"><div class="p-card-icon">🥊</div><div><div class="p-card-title">Fight Night</div><div class="p-card-sub">Combat sports conditioning</div></div></div>
+            <div class="p-card"><div class="p-card-icon">💪</div><div><div class="p-card-title">General Fitness</div><div class="p-card-sub">Targeted workouts</div></div></div>
+            <span class="p-badge">Week 3 · Power</span>
+            <div class="p-workout">
+              <div class="p-workout-header">Bag Work — Muay Thai</div>
+              <div class="p-workout-row"><div><div class="p-workout-name">Jab Cross Hook Rear Kick</div><div class="p-workout-note">Work this combo the full round</div></div><div class="p-workout-rx">3 min · 35 sec rest</div></div>
+              <div class="p-workout-row"><div><div class="p-workout-name">Teep 10-10-20</div><div class="p-workout-note">10 right, 10 left, 20 alternating</div></div><div class="p-workout-rx">3 min · 35 sec rest</div></div>
+              <div class="p-workout-row"><div><div class="p-workout-name">Freestyle</div><div class="p-workout-note">Any combos — keep moving</div></div><div class="p-workout-rx">3 min</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="choose-btn">I want this one →</button>
+    </div>
+
+    <!-- OPTION 4: GHOST (Light) -->
+    <div class="design-block">
+      <div>
+        <div class="design-label">Option 4</div>
+        <div class="design-name" style="color:#111">Ghost</div>
+        <div class="design-desc">Light mode. Clean white and gray with black accents. Professional, printable, easy to read anywhere.</div>
+      </div>
+      <div class="preview ghost" style="border-color:#ccc">
+        <div class="preview-inner">
+          <div class="p-header" style="border-bottom-color:#111">
+            <div class="p-logo">Modern Combat</div>
+            <div class="p-tagline">Train with purpose. Fight ready.</div>
+          </div>
+          <div class="p-body">
+            <div class="p-card"><div class="p-card-icon">🎖️</div><div><div class="p-card-title">PT Test Prep</div><div class="p-card-sub">Military & law enforcement tests</div></div></div>
+            <div class="p-card"><div class="p-card-icon">🥊</div><div><div class="p-card-title">Fight Night</div><div class="p-card-sub">Combat sports conditioning</div></div></div>
+            <div class="p-card"><div class="p-card-icon">💪</div><div><div class="p-card-title">General Fitness</div><div class="p-card-sub">Targeted workouts</div></div></div>
+            <span class="p-badge">Week 3 · Power</span>
+            <div class="p-workout">
+              <div class="p-workout-header">Bag Work — Muay Thai</div>
+              <div class="p-workout-row"><div><div class="p-workout-name">Jab Cross Hook Rear Kick</div><div class="p-workout-note">Work this combo the full round</div></div><div class="p-workout-rx">3 min · 35 sec rest</div></div>
+              <div class="p-workout-row"><div><div class="p-workout-name">Teep 10-10-20</div><div class="p-workout-note">10 right, 10 left, 20 alternating</div></div><div class="p-workout-rx">3 min · 35 sec rest</div></div>
+              <div class="p-workout-row"><div><div class="p-workout-name">Freestyle</div><div class="p-workout-note">Any combos — keep moving</div></div><div class="p-workout-rx">3 min</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="choose-btn">I want this one →</button>
+    </div>
+
+    <!-- OPTION 5: OPERATOR GREEN -->
+    <div class="design-block">
+      <div>
+        <div class="design-label">Option 5</div>
+        <div class="design-name" style="color:#78a846">Operator</div>
+        <div class="design-desc">Near-black background with military olive/OD green accents. Earthy, tactical, field-ready feel.</div>
+      </div>
+      <div class="preview operator">
+        <div class="preview-inner">
+          <div class="p-header">
+            <div class="p-logo">Modern Combat</div>
+            <div class="p-tagline">Train with purpose. Fight ready.</div>
+          </div>
+          <div class="p-body">
+            <div class="p-card"><div class="p-card-icon">🎖️</div><div><div class="p-card-title">PT Test Prep</div><div class="p-card-sub">Military & law enforcement tests</div></div></div>
+            <div class="p-card"><div class="p-card-icon">🥊</div><div><div class="p-card-title">Fight Night</div><div class="p-card-sub">Combat sports conditioning</div></div></div>
+            <div class="p-card"><div class="p-card-icon">💪</div><div><div class="p-card-title">General Fitness</div><div class="p-card-sub">Targeted workouts</div></div></div>
+            <span class="p-badge">Week 3 · Power</span>
+            <div class="p-workout">
+              <div class="p-workout-header">Bag Work — Muay Thai</div>
+              <div class="p-workout-row"><div><div class="p-workout-name">Jab Cross Hook Rear Kick</div><div class="p-workout-note">Work this combo the full round</div></div><div class="p-workout-rx">3 min · 35 sec rest</div></div>
+              <div class="p-workout-row"><div><div class="p-workout-name">Teep 10-10-20</div><div class="p-workout-note">10 right, 10 left, 20 alternating</div></div><div class="p-workout-rx">3 min · 35 sec rest</div></div>
+              <div class="p-workout-row"><div><div class="p-workout-name">Freestyle</div><div class="p-workout-note">Any combos — keep moving</div></div><div class="p-workout-rx">3 min</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="choose-btn">I want this one →</button>
+    </div>
+
+  </div>
+</body>
+</html>
