@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Exercise Cards Demo — Modern Combat Path</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0d0505; --surface: #170808; --surface2: #200d0d;
+      --border: #3a1515; --accent: #e63946; --text: #f5f0f0; --muted: #8a7070;
+    }
+    body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; padding:32px 16px 60px; }
+    h1 { font-size:1.2rem; letter-spacing:0.2em; color:var(--accent); text-transform:uppercase; margin-bottom:8px; }
+    .subtitle { font-size:0.82rem; color:var(--muted); margin-bottom:32px; line-height:1.6; }
+    .cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:24px; max-width:1100px; }
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+    .card-header { background:var(--surface2); padding:12px 18px; border-bottom:1px solid var(--border); }
+    .card-name { font-size:1rem; font-weight:700; }
+    .card-tag  { font-size:0.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; margin-top:2px; }
+    .card-body { padding:16px 18px; }
+    .diagram   { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:14px; }
+    .diag-label { font-size:0.6rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); text-align:center; margin-top:5px; }
+    .arrow { font-size:1.4rem; color:var(--accent); flex-shrink:0; }
+    .cues { display:flex; flex-direction:column; gap:5px; }
+    .cue { font-size:0.78rem; color:var(--muted); display:flex; gap:7px; }
+    .cue::before { content:'·'; color:var(--accent); font-weight:700; flex-shrink:0; }
+    svg.fig { fill:none; stroke:var(--accent); }
+    .note-bar { background:rgba(230,57,70,0.07); border:1px solid rgba(230,57,70,0.15); border-radius:6px; padding:6px 12px; font-size:0.72rem; color:var(--accent); margin-top:14px; }
+    .back-link { display:inline-block; margin-bottom:24px; color:var(--muted); font-size:0.82rem; text-decoration:none; border:1px solid var(--border); padding:6px 14px; border-radius:6px; }
+    .back-link:hover { border-color:var(--accent); color:var(--accent); }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-link">← Back to App</a>
+  <h1>Exercise Instruction Cards</h1>
+  <p class="subtitle">
+    This is a demo of what in-app exercise illustrations would look like — SVG diagrams showing start and end positions.<br>
+    Let me know if you want this style built into the app, or if you'd prefer to source photo GIFs instead.
+  </p>
+
+  <div class="cards">
+
+    <!-- DEADLIFT -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-name">Conventional Deadlift</div>
+        <div class="card-tag">Lower Body · Posterior Chain</div>
+      </div>
+      <div class="card-body">
+        <div class="diagram">
+          <!-- START: bent over, bar at shins -->
+          <div>
+            <svg width="80" height="120" viewBox="0 0 80 120" class="fig" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="40" cy="10" r="9" stroke-width="2.5"/>
+              <!-- Spine bent forward -->
+              <line x1="40" y1="19" x2="20" y2="50" stroke-width="3"/>
+              <!-- Hips -->
+              <line x1="20" y1="50" x2="10" y2="50" stroke-width="2.5"/>
+              <line x1="20" y1="50" x2="30" y2="50" stroke-width="2.5"/>
+              <!-- Left arm reaching to bar -->
+              <line x1="20" y1="30" x2="8"  y2="55" stroke-width="2.5"/>
+              <line x1="8"  y1="55" x2="8"  y2="70" stroke-width="2.5"/>
+              <!-- Right arm -->
+              <line x1="20" y1="30" x2="32" y2="55" stroke-width="2.5"/>
+              <line x1="32" y1="55" x2="32" y2="70" stroke-width="2.5"/>
+              <!-- Bar -->
+              <line x1="2" y1="70" x2="58" y2="70" stroke-width="3.5"/>
+              <circle cx="4"  cy="70" r="5" stroke-width="2"/>
+              <circle cx="56" cy="70" r="5" stroke-width="2"/>
+              <!-- Left leg bent -->
+              <line x1="10" y1="50" x2="12" y2="85" stroke-width="3"/>
+              <line x1="12" y1="85" x2="8"  y2="116" stroke-width="3"/>
+              <!-- Right leg bent -->
+              <line x1="30" y1="50" x2="28" y2="85" stroke-width="3"/>
+              <line x1="28" y1="85" x2="32" y2="116" stroke-width="3"/>
+              <!-- Floor -->
+              <line x1="0" y1="118" x2="70" y2="118" stroke-width="1.5" stroke="rgba(230,57,70,0.3)"/>
+            </svg>
+            <div class="diag-label">Start</div>
+          </div>
+          <div class="arrow">→</div>
+          <!-- END: standing, bar at hips -->
+          <div>
+            <svg width="80" height="120" viewBox="0 0 80 120" class="fig" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="38" cy="10" r="9" stroke-width="2.5"/>
+              <!-- Upright spine -->
+              <line x1="38" y1="19" x2="38" y2="62" stroke-width="3"/>
+              <!-- Shoulders -->
+              <line x1="28" y1="26" x2="48" y2="26" stroke-width="2.5"/>
+              <!-- Arms straight down holding bar -->
+              <line x1="28" y1="26" x2="22" y2="62" stroke-width="2.5"/>
+              <line x1="48" y1="26" x2="54" y2="62" stroke-width="2.5"/>
+              <!-- Bar at hips -->
+              <line x1="10" y1="64" x2="66" y2="64" stroke-width="3.5"/>
+              <circle cx="12" cy="64" r="5" stroke-width="2"/>
+              <circle cx="64" cy="64" r="5" stroke-width="2"/>
+              <!-- Legs straight -->
+              <line x1="34" y1="62" x2="30" y2="92" stroke-width="3"/>
+              <line x1="30" y1="92" x2="26" y2="118" stroke-width="3"/>
+              <line x1="42" y1="62" x2="46" y2="92" stroke-width="3"/>
+              <line x1="46" y1="92" x2="50" y2="118" stroke-width="3"/>
+              <line x1="0" y1="118" x2="70" y2="118" stroke-width="1.5" stroke="rgba(230,57,70,0.3)"/>
+            </svg>
+            <div class="diag-label">Finish</div>
+          </div>
+        </div>
+        <div class="cues">
+          <div class="cue">Bar stays in contact with shins on the way up</div>
+          <div class="cue">Drive floor away — don't think about pulling</div>
+          <div class="cue">Lock hips and knees at the same time at the top</div>
+          <div class="cue">Neutral spine throughout — no rounding</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PUSH-UP -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-name">Push-up</div>
+        <div class="card-tag">Upper Body · Chest · Triceps</div>
+      </div>
+      <div class="card-body">
+        <div class="diagram">
+          <!-- START: extended plank -->
+          <div>
+            <svg width="130" height="75" viewBox="0 0 130 75" class="fig" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="118" cy="14" r="8" stroke-width="2.5"/>
+              <line x1="118" y1="22" x2="32"  y2="42" stroke-width="3"/>
+              <line x1="105" y1="27" x2="110" y2="50" stroke-width="2.5"/>
+              <line x1="110" y1="50" x2="112" y2="70" stroke-width="2.5"/>
+              <line x1="45"  y1="40" x2="40"  y2="62" stroke-width="2.5"/>
+              <line x1="40"  y1="62" x2="38"  y2="72" stroke-width="2.5"/>
+              <line x1="60"  y1="42" x2="60"  y2="62" stroke-width="2.5"/>
+              <line x1="60"  y1="62" x2="60"  y2="72" stroke-width="2.5"/>
+              <line x1="20"  y1="72" x2="125" y2="72" stroke-width="1.5" stroke="rgba(230,57,70,0.3)"/>
+            </svg>
+            <div class="diag-label">Start</div>
+          </div>
+          <div class="arrow">↕</div>
+          <!-- DOWN: lowered position -->
+          <div>
+            <svg width="130" height="75" viewBox="0 0 130 75" class="fig" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="118" cy="24" r="8" stroke-width="2.5"/>
+              <line x1="118" y1="32" x2="32"  y2="50" stroke-width="3"/>
+              <line x1="105" y1="36" x2="100" y2="55" stroke-width="2.5"/>
+              <line x1="100" y1="55" x2="112" y2="70" stroke-width="2.5"/>
+              <line x1="45"  y1="48" x2="32"  y2="58" stroke-width="2.5"/>
+              <line x1="32"  y1="58" x2="38"  y2="72" stroke-width="2.5"/>
+              <line x1="60"  y1="50" x2="60"  y2="62" stroke-width="2.5"/>
+              <line x1="60"  y1="62" x2="60"  y2="72" stroke-width="2.5"/>
+              <line x1="20"  y1="72" x2="125" y2="72" stroke-width="1.5" stroke="rgba(230,57,70,0.3)"/>
+            </svg>
+            <div class="diag-label">Down</div>
+          </div>
+        </div>
+        <div class="cues">
+          <div class="cue">Straight line from head to heels — no sagging hips</div>
+          <div class="cue">Hands slightly wider than shoulder-width</div>
+          <div class="cue">Chest touches or nearly touches the ground</div>
+          <div class="cue">Elbows at 45° angle — not flared wide</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BACK SQUAT -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-name">Back Squat</div>
+        <div class="card-tag">Lower Body · Quad · Glute</div>
+      </div>
+      <div class="card-body">
+        <div class="diagram">
+          <!-- STANDING with bar -->
+          <div>
+            <svg width="80" height="130" viewBox="0 0 80 130" class="fig" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="40" cy="10" r="9" stroke-width="2.5"/>
+              <line x1="40" y1="19" x2="40" y2="58" stroke-width="3"/>
+              <line x1="22" y1="28" x2="58" y2="28" stroke-width="2.5"/>
+              <!-- Bar on traps -->
+              <line x1="5"  y1="30" x2="75" y2="30" stroke-width="3.5"/>
+              <circle cx="7"  cy="30" r="5" stroke-width="2"/>
+              <circle cx="73" cy="30" r="5" stroke-width="2"/>
+              <!-- Arms holding bar -->
+              <line x1="22" y1="28" x2="18" y2="34" stroke-width="2.5"/>
+              <line x1="58" y1="28" x2="62" y2="34" stroke-width="2.5"/>
+              <!-- Legs straight -->
+              <line x1="36" y1="58" x2="30" y2="94" stroke-width="3"/>
+              <line x1="30" y1="94" x2="24" y2="126" stroke-width="3"/>
+              <line x1="44" y1="58" x2="50" y2="94" stroke-width="3"/>
+              <line x1="50" y1="94" x2="56" y2="126" stroke-width="3"/>
+              <line x1="10" y1="128" x2="70" y2="128" stroke-width="1.5" stroke="rgba(230,57,70,0.3)"/>
+            </svg>
+            <div class="diag-label">Start</div>
+          </div>
+          <div class="arrow">↕</div>
+          <!-- BOTTOM of squat -->
+          <div>
+            <svg width="80" height="130" viewBox="0 0 80 130" class="fig" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="40" cy="22" r="9" stroke-width="2.5"/>
+              <line x1="40" y1="31" x2="38" y2="62" stroke-width="3"/>
+              <!-- Bar -->
+              <line x1="5"  y1="38" x2="75" y2="38" stroke-width="3.5"/>
+              <circle cx="7"  cy="38" r="5" stroke-width="2"/>
+              <circle cx="73" cy="38" r="5" stroke-width="2"/>
+              <!-- Arms holding -->
+              <line x1="28" y1="38" x2="22" y2="44" stroke-width="2.5"/>
+              <line x1="52" y1="38" x2="58" y2="44" stroke-width="2.5"/>
+              <!-- Hips wide, deep squat -->
+              <line x1="26" y1="62" x2="10" y2="82" stroke-width="3"/>
+              <line x1="10" y1="82" x2="14" y2="126" stroke-width="3"/>
+              <line x1="50" y1="62" x2="66" y2="82" stroke-width="3"/>
+              <line x1="66" y1="82" x2="62" y2="126" stroke-width="3"/>
+              <line x1="4"  y1="128" x2="76" y2="128" stroke-width="1.5" stroke="rgba(230,57,70,0.3)"/>
+            </svg>
+            <div class="diag-label">Bottom</div>
+          </div>
+        </div>
+        <div class="cues">
+          <div class="cue">Knees track over toes throughout</div>
+          <div class="cue">Hip crease below parallel at the bottom</div>
+          <div class="cue">Chest stays tall — no forward lean</div>
+          <div class="cue">Drive knees out on the way up</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JAB CROSS (combat) -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-name">Jab Cross</div>
+        <div class="card-tag">Muay Thai · Boxing · Combo</div>
+      </div>
+      <div class="card-body">
+        <div class="diagram">
+          <!-- GUARD position -->
+          <div>
+            <svg width="80" height="130" viewBox="0 0 80 130" class="fig" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="40" cy="12" r="9" stroke-width="2.5"/>
+              <line x1="40" y1="21" x2="40" y2="68" stroke-width="3"/>
+              <!-- Guard: lead arm up front, rear arm tight -->
+              <line x1="34" y1="32" x2="18" y2="50" stroke-width="2.5"/>
+              <line x1="18" y1="50" x2="16" y2="70" stroke-width="2.5"/>
+              <line x1="46" y1="32" x2="56" y2="52" stroke-width="2.5"/>
+              <line x1="56" y1="52" x2="50" y2="68" stroke-width="2.5"/>
+              <!-- Legs — fighting stance -->
+              <line x1="36" y1="68" x2="28" y2="100" stroke-width="3"/>
+              <line x1="28" y1="100" x2="20" y2="126" stroke-width="3"/>
+              <line x1="44" y1="68" x2="52" y2="100" stroke-width="3"/>
+              <line x1="52" y1="100" x2="58" y2="126" stroke-width="3"/>
+              <line x1="8"  y1="128" x2="68" y2="128" stroke-width="1.5" stroke="rgba(230,57,70,0.3)"/>
+            </svg>
+            <div class="diag-label">Guard</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+            <span style="font-size:0.65rem;color:var(--muted)">Jab</span>
+            <span style="color:var(--accent);font-size:1.1rem">→</span>
+            <span style="font-size:0.65rem;color:var(--muted)">Cross</span>
+            <span style="color:var(--accent);font-size:1.1rem">→</span>
+          </div>
+          <!-- JAB / CROSS extended -->
+          <div>
+            <svg width="80" height="130" viewBox="0 0 80 130" class="fig" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="36" cy="12" r="9" stroke-width="2.5"/>
+              <line x1="36" y1="21" x2="38" y2="68" stroke-width="3"/>
+              <!-- Lead arm fully extended (jab) -->
+              <line x1="32" y1="32" x2="12" y2="40" stroke-width="2.5"/>
+              <line x1="12" y1="40" x2="4"  y2="46" stroke-width="2.5"/>
+              <!-- Rear arm extended (cross) -->
+              <line x1="44" y1="32" x2="62" y2="38" stroke-width="2.5"/>
+              <line x1="62" y1="38" x2="76" y2="44" stroke-width="2.5"/>
+              <!-- Hip rotation visible -->
+              <line x1="34" y1="68" x2="24" y2="98" stroke-width="3"/>
+              <line x1="24" y1="98" x2="16" y2="126" stroke-width="3"/>
+              <line x1="42" y1="68" x2="54" y2="98" stroke-width="3"/>
+              <line x1="54" y1="98" x2="62" y2="126" stroke-width="3"/>
+              <line x1="4"  y1="128" x2="72" y2="128" stroke-width="1.5" stroke="rgba(230,57,70,0.3)"/>
+              <!-- Punch impact dots -->
+              <circle cx="3"  cy="46" r="3" stroke-width="1.5" stroke="rgba(230,57,70,0.6)"/>
+              <circle cx="77" cy="44" r="3" stroke-width="1.5" stroke="rgba(230,57,70,0.6)"/>
+            </svg>
+            <div class="diag-label">Jab + Cross</div>
+          </div>
+        </div>
+        <div class="cues">
+          <div class="cue">Jab: lead hand snaps out and back — don't drop</div>
+          <div class="cue">Cross: rotate rear hip forward — power comes from the floor</div>
+          <div class="cue">Return to guard between and after each punch</div>
+          <div class="cue">Keep chin down throughout</div>
+        </div>
+        <div class="note-bar">Combo: Jab → Cross. Work this the full round.</div>
+      </div>
+    </div>
+
+    <!-- PLANK -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-name">Plank Hold</div>
+        <div class="card-tag">Core · Stability · Anti-Extension</div>
+      </div>
+      <div class="card-body">
+        <div class="diagram" style="justify-content:center">
+          <div>
+            <svg width="180" height="80" viewBox="0 0 180 80" class="fig" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="162" cy="16" r="9" stroke-width="2.5"/>
+              <!-- Body perfectly level -->
+              <line x1="162" y1="25" x2="22" y2="44" stroke-width="3"/>
+              <!-- Arms vertical (forearm plank) -->
+              <line x1="140" y1="30" x2="136" y2="52" stroke-width="2.5"/>
+              <line x1="136" y1="52" x2="126" y2="56" stroke-width="2.5"/>
+              <line x1="148" y1="28" x2="148" y2="52" stroke-width="2.5"/>
+              <line x1="148" y1="52" x2="138" y2="56" stroke-width="2.5"/>
+              <!-- Forearms on floor -->
+              <line x1="122" y1="56" x2="152" y2="56" stroke-width="2.5"/>
+              <!-- Legs -->
+              <line x1="40"  y1="42" x2="34"  y2="64" stroke-width="2.5"/>
+              <line x1="34"  y1="64" x2="28"  y2="74" stroke-width="2.5"/>
+              <line x1="56"  y1="43" x2="50"  y2="64" stroke-width="2.5"/>
+              <line x1="50"  y1="64" x2="44"  y2="74" stroke-width="2.5"/>
+              <!-- Floor -->
+              <line x1="10" y1="76" x2="170" y2="76" stroke-width="1.5" stroke="rgba(230,57,70,0.3)"/>
+              <!-- Level indicator -->
+              <line x1="20" y1="30" x2="170" y2="30" stroke-width="0.8" stroke-dasharray="4,4" stroke="rgba(230,57,70,0.25)"/>
+              <text x="4" y="34" font-size="7" fill="rgba(230,57,70,0.4)" font-family="sans-serif">LEVEL</text>
+            </svg>
+            <div class="diag-label">Forearm Plank</div>
+          </div>
+        </div>
+        <div class="cues">
+          <div class="cue">Straight line from head to heels — check in mirror</div>
+          <div class="cue">Squeeze glutes and quads — not just abs</div>
+          <div class="cue">Neutral neck — don't look up or tuck chin hard</div>
+          <div class="cue">Breathe steadily — don't hold your breath</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="margin-top:36px; padding:18px; background:#170808; border:1px solid #3a1515; border-radius:10px; max-width:700px; font-size:0.85rem; line-height:1.7; color:#8a7070;">
+    <strong style="color:#f5f0f0">What you're looking at:</strong> SVG diagrams I can build showing start/end positions for any exercise, with form cues attached. No external images needed — everything is drawn in code.<br><br>
+    <strong style="color:#f5f0f0">To add more exercises:</strong> Just tell me which ones and I'll draw instruction cards for them.<br><br>
+    <strong style="color:#e63946">Alternatively:</strong> If you want <em>animated GIFs of real people</em> doing exercises, those need to be sourced from sites like ExRx.net, Giphy, or a fitness API. I can build the display system and you drop the GIF links in.
+  </div>
+</body>
+</html>

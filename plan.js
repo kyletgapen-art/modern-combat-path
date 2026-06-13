@@ -2,6 +2,12 @@
 //  MODERN COMBAT — Plan Generator
 // ─────────────────────────────────────────────
 
+// Maps UI difficulty values to workout data keys
+function resolveExerciseLevel(level) {
+  const map = { easy: 'beginner', average: 'beginner', difficult: 'intermediate', 'very-difficult': 'advanced' };
+  return map[level] || level;
+}
+
 const PHASES = {
   foundation: {
     label: 'Foundation',
@@ -133,16 +139,17 @@ function buildBagRounds(fightKey, phase) {
 }
 
 function buildDrillingRounds(fightKey, phase) {
+  const lv = resolveExerciseLevel(phase.exerciseLevel);
   const pool = fightKey === 'bjj'
-    ? (BJJ_DRILLS[phase.exerciseLevel] || BJJ_DRILLS.beginner)
-    : (JUDO_DRILLS[phase.exerciseLevel] || JUDO_DRILLS.beginner);
+    ? (BJJ_DRILLS[lv] || BJJ_DRILLS.beginner)
+    : (JUDO_DRILLS[lv] || JUDO_DRILLS.beginner);
   return pickRandom([...pool], Math.min(phase.numRounds, pool.length));
 }
 
 function buildTechniqueRounds(fightKey, phase, hasPartner) {
   const fight = FIGHT_WORKOUTS[fightKey];
   if (!fight) return [];
-  const exLevel = phase.exerciseLevel;
+  const exLevel = resolveExerciseLevel(phase.exerciseLevel);
   const isGrappling = (fightKey === 'bjj' || fightKey === 'judo');
 
   if (isGrappling) {
@@ -256,27 +263,61 @@ function buildDayWorkout(mode, selection, dayType, phase, config) {
 }
 
 function buildGeneralDay(selection, phase, config) {
-  const cat = GENERAL_WORKOUTS[selection];
+  const cat = GENERAL_WORKOUTS[selection] || FIGHT_WORKOUTS[selection];
   if (!cat) return null;
-  const exLevel = phase.exerciseLevel;
+  const exLevel = resolveExerciseLevel(phase.exerciseLevel);
   const pool = cat[exLevel] || cat.beginner;
-
-  // How many exercises to show scales with session time
   const time = parseInt(config.time) || 45;
-  const count = time <= 30 ? 3 : time <= 45 ? 4 : time <= 60 ? 5 : 6;
 
-  const exercises = pickRandom([...pool], Math.min(count, pool.length)).map(ex => ({
-    ...ex,
-    note: [ex.note, phase.weightNote].filter(Boolean).join(' · '),
-  }));
+  // Exercise counts tuned so total work fills the chosen time.
+  // Yoga/Pilates: ~2-3 min per pose/exercise (both sides + breath)
+  // Strength/Core: ~4-5 min per exercise (sets + rest)
+  // Agility/Plyometrics: ~4-5 min per exercise (sets + rest)
+  // Mobility: ~3-4 min per position
+  // HIIT/CrossFit/HYROX/Cardio: exercises are already long timed blocks
+  const countMap = {
+    yoga:          { 30: 9,  45: 13, 60: 17, 90: 24 },
+    pilates:       { 30: 10, 45: 15, 60: 20, 90: 28 },
+    mobility:      { 30: 8,  45: 11, 60: 14, 90: 20 },
+    agility:       { 30: 6,  45: 9,  60: 12, 90: 16 },
+    'upper-body':  { 30: 6,  45: 8,  60: 10, 90: 14 },
+    'lower-body':  { 30: 6,  45: 8,  60: 10, 90: 14 },
+    core:          { 30: 6,  45: 8,  60: 10, 90: 14 },
+    hiit:          { 30: 3,  45: 4,  60: 5,  90: 6  },
+    cardio:        { 30: 2,  45: 3,  60: 4,  90: 5  },
+    crossfit:      { 30: 2,  45: 3,  60: 4,  90: 5  },
+    hyrox:         { 30: 2,  45: 3,  60: 4,  90: 5  },
+  };
+  const counts = countMap[selection] || { 30: 4, 45: 6, 60: 8, 90: 12 };
+  const count = counts[time] || counts[45];
 
-  const heading = cat.name + ' — ' + capitalize(exLevel);
+  const exercises = pickRandom([...pool], Math.min(count, pool.length));
+
+  // Yoga, Pilates and Mobility ARE the warm-up — no separate warm-up block
+  const skipWarmup = ['yoga', 'pilates', 'mobility'].includes(selection);
+
+  const activeCategories = ['agility', 'mobility', 'yoga', 'pilates', 'hiit'];
+  const warmupPool = activeCategories.includes(selection) ? [...WARMUPS.active] : [...WARMUPS.general];
+  const warmupKey  = activeCategories.includes(selection) ? 'warmup:active' : 'warmup:general';
+  const heading    = cat.name;
+  const mainKey    = `general:${selection}:${exLevel}`;
+
+  if (skipWarmup) {
+    return {
+      title: heading,
+      phaseNote: phase.theme,
+      sections: [
+        { heading: heading, items: exercises, poolKey: mainKey },
+      ],
+    };
+  }
+
   return {
     title: heading,
     phaseNote: phase.theme,
     sections: [
-      { heading: 'Warm-Up', items: pickRandom([...WARMUPS.general], 3) },
-      { heading: heading, items: exercises },
+      { heading: 'Warm-Up', items: pickRandom(warmupPool, 2), poolKey: warmupKey },
+      { heading: heading, items: exercises, poolKey: mainKey },
     ],
   };
 }
@@ -284,7 +325,7 @@ function buildGeneralDay(selection, phase, config) {
 function buildPTDay(selection, dayType, phase, config) {
   const test = PT_WORKOUTS[selection];
   if (!test) return null;
-  const exLevel = phase.exerciseLevel;
+  const exLevel = resolveExerciseLevel(phase.exerciseLevel);
   const bucket = [30,45,60,90].reduce((p,c) =>
     Math.abs(c - parseInt(config.time)) < Math.abs(p - parseInt(config.time)) ? c : p);
   const all = (test[exLevel] && test[exLevel][bucket]) ? [...test[exLevel][bucket]] : [];
@@ -306,7 +347,7 @@ function buildPTDay(selection, dayType, phase, config) {
   if (!main.length) main = all.slice(0, 5);
   main = main.map(ex => ({
     ...ex,
-    note: [ex.note, phase.weightNote].filter(Boolean).join(' · '),
+    note: ex.note,
   }));
 
   const sectionTitle = heading === 'Full Simulation'
@@ -317,8 +358,8 @@ function buildPTDay(selection, dayType, phase, config) {
     title: sectionTitle,
     phaseNote: phase.theme,
     sections: [
-      { heading: 'Warm-Up', items: pickRandom([...WARMUPS.general], 4) },
-      { heading: sectionTitle, items: main },
+      { heading: 'Warm-Up', items: pickRandom([...WARMUPS.general], 4), poolKey: 'warmup:general' },
+      { heading: sectionTitle, items: main, poolKey: `pt:${selection}:${exLevel}:${bucket}` },
     ],
   };
 }
@@ -326,7 +367,7 @@ function buildPTDay(selection, dayType, phase, config) {
 function buildFightDay(selection, dayType, phase, config) {
   const fight = FIGHT_WORKOUTS[selection];
   if (!fight) return null;
-  const exLevel = phase.exerciseLevel;
+  const exLevel = resolveExerciseLevel(phase.exerciseLevel);
   const hasPartner = config.partner === 'yes';
   const isGrappling = (selection === 'bjj' || selection === 'judo');
   let sections = [], heading = '';
@@ -336,29 +377,31 @@ function buildFightDay(selection, dayType, phase, config) {
     const rounds = isGrappling
       ? buildDrillingRounds(selection, phase)
       : buildBagRounds(selection, phase);
+    const bagMainKey = isGrappling ? `${selection}-drills:${exLevel}` : 'mt-combos';
     sections = [
-      { heading: 'Warm-Up', items: pickRandom([...MT_WARMUPS], 2) },
-      { heading: heading, items: rounds },
+      { heading: 'Warm-Up', items: pickRandom([...MT_WARMUPS], 2), poolKey: 'warmup:mt' },
+      { heading: heading, items: rounds, poolKey: bagMainKey },
     ];
   } else if (dayType === 'strength') {
     heading = 'Strength & Conditioning — ' + fight.name;
     const pool = fight.weights[exLevel] || fight.weights.beginner;
     const exercises = pickRandom([...pool], Math.min(6, pool.length)).map(ex => ({
       ...ex,
-      note: [ex.note, phase.weightNote].filter(Boolean).join(' · '),
+      note: ex.note,
     }));
     sections = [
-      { heading: 'Warm-Up', items: pickRandom([...WARMUPS.general], 3) },
-      { heading: heading, items: exercises },
+      { heading: 'Warm-Up', items: pickRandom([...WARMUPS.general], 3), poolKey: 'warmup:general' },
+      { heading: heading, items: exercises, poolKey: `fight:${selection}:weights:${exLevel}` },
     ];
   } else {
     heading = hasPartner
       ? 'Partner Work — ' + fight.name
       : 'Shadowboxing & Technique — ' + fight.name;
     const exercises = buildTechniqueRounds(selection, phase, hasPartner);
+    const techKey = hasPartner ? `fight:${selection}:partner:${exLevel}` : 'mt-combos';
     sections = [
-      { heading: 'Warm-Up', items: pickRandom([...MT_WARMUPS], 2) },
-      { heading: heading, items: exercises },
+      { heading: 'Warm-Up', items: pickRandom([...MT_WARMUPS], 2), poolKey: 'warmup:mt' },
+      { heading: heading, items: exercises, poolKey: techKey },
     ];
   }
 

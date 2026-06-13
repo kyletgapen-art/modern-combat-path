@@ -7,7 +7,7 @@ const state = {
   mode: null,        // 'pt' | 'fight'
   selection: null,   // test key or fight key
   // Single workout
-  level:   'beginner',
+  level:   'easy',
   time:    '45',
   equip:   'basic',
   partner: 'no',
@@ -15,7 +15,7 @@ const state = {
   planWeeks:   '4',
   planDays:    '3',
   planTime:    '45',
-  planLevel:   'beginner',
+  planLevel:   'easy',
   planEquip:   'basic',
   planPartner: 'no',
   // Custom PT test
@@ -30,6 +30,7 @@ function showScreen(id) {
   const el = document.getElementById('screen-' + id);
   if (el) el.classList.add('active');
   window.scrollTo(0, 0);
+  updateTimerVisibility(id);
 }
 
 // ── Test / Fight Selection ─────────────────────
@@ -98,7 +99,7 @@ function generateSingleWorkout() {
   if (!state.selection) return;
 
   // Map fitness level to a phase for single workouts
-  const levelPhaseMap = { beginner: 'foundation', intermediate: 'power', advanced: 'peak' };
+  const levelPhaseMap = { easy: 'foundation', average: 'build', difficult: 'power', 'very-difficult': 'peak' };
   const phaseKey = levelPhaseMap[state.level] || 'foundation';
   const phase = PHASES[phaseKey];
 
@@ -123,11 +124,12 @@ function generateSingleWorkout() {
     : state.mode === 'general' ? GENERAL_WORKOUTS[state.selection]
     : FIGHT_WORKOUTS[state.selection];
   const name = lookup ? lookup.name : state.selection;
-  document.getElementById('workout-title').textContent = name + ' — ' + capitalize(state.level);
+  const levelLabel = { easy: 'Easy', average: 'Average', difficult: 'Difficult', 'very-difficult': 'Very Difficult' }[state.level] || capitalize(state.level);
+  document.getElementById('workout-title').textContent = name + ' — ' + levelLabel;
 
   const modeLabel = { pt: 'PT Test Prep', fight: 'Fight Night', general: 'General Fitness' }[state.mode] || '';
   const metaTags = {
-    level: capitalize(state.level),
+    level: levelLabel,
     time: state.time + ' min',
     type: modeLabel,
     equip: { none:'No Equipment', basic:'Basic Gym', full:'Full Gym', bags:'Bags & Pads' }[state.equip],
@@ -167,7 +169,7 @@ function renderPlan(plan) {
     plan.totalWeeks + ' weeks',
     plan.daysPerWeek + ' days/week',
     plan.planTime ? plan.planTime + ' min sessions' : '',
-    capitalize(state.planLevel),
+    { easy: 'Easy', average: 'Average', difficult: 'Difficult', 'very-difficult': 'Very Difficult' }[state.planLevel] || capitalize(state.planLevel),
   ].filter(Boolean).map(v => `<span class="meta-tag">${v}</span>`).join('');
 
   let html = `<div class="plan-meta">${metaTags}</div>`;
@@ -230,23 +232,6 @@ function renderDayRow(day, weekNum, dayIndex) {
     </div>`;
 }
 
-function renderWorkoutSections(sections) {
-  return sections.map(section => {
-    const rows = section.items.map(ex => `
-      <div class="exercise-row">
-        <div>
-          <div class="exercise-name">${ex.name}</div>
-          ${ex.note ? `<div class="exercise-note">${ex.note}</div>` : ''}
-        </div>
-        <div class="exercise-prescription">${ex.prescription}</div>
-      </div>`).join('');
-    return `
-      <div class="workout-section">
-        <div class="workout-section-header">${section.heading}</div>
-        <div class="workout-section-body">${rows}</div>
-      </div>`;
-  }).join('');
-}
 
 // ── Accordion Toggles ──────────────────────────
 function toggleWeek(num) {
@@ -368,8 +353,137 @@ function deleteTestById(id) {
   loadSavedTests();
 }
 
-// ── Enter key on custom event inputs ──────────
+// ── Exercise Refresh ───────────────────────────
+function refreshExercise(btn) {
+  const row = btn.closest('.exercise-row');
+  if (!row) return;
+  const poolKey = row.dataset.poolKey;
+  const pool = resolvePool(poolKey);
+  if (!pool || pool.length < 2) return;
+
+  const currentName = row.querySelector('.exercise-name')?.textContent || '';
+  const available = pool.filter(ex => (ex.name || ex) !== currentName);
+  if (!available.length) return;
+
+  const pick = available[Math.floor(Math.random() * available.length)];
+  const ex = typeof pick === 'string'
+    ? { name: pick, note: 'Work this combo the full round', prescription: row.querySelector('.exercise-prescription')?.textContent || '3 min' }
+    : pick;
+
+  const nameEl = row.querySelector('.exercise-name');
+  const noteEl = row.querySelector('.exercise-note');
+  const rxEl   = row.querySelector('.exercise-prescription');
+
+  if (nameEl) nameEl.textContent = ex.name || '';
+  if (noteEl) noteEl.textContent = ex.note || '';
+  if (rxEl && ex.prescription) rxEl.textContent = ex.prescription;
+
+  row.classList.add('row-refreshed');
+  setTimeout(() => row.classList.remove('row-refreshed'), 500);
+}
+
+function resolvePool(poolKey) {
+  if (!poolKey) return null;
+  if (poolKey === 'mt-combos')  return MT_COMBOS;
+  if (poolKey === 'mt-drills')  return MT_DRILLS.map(d => ({ name: d.name, note: d.desc }));
+  if (poolKey.startsWith('bjj-drills:'))  return BJJ_DRILLS[poolKey.split(':')[1]] || null;
+  if (poolKey.startsWith('judo-drills:')) return JUDO_DRILLS[poolKey.split(':')[1]] || null;
+  if (poolKey === 'warmup:active')  return WARMUPS.active;
+  if (poolKey === 'warmup:general') return WARMUPS.general;
+  if (poolKey === 'warmup:mt')      return MT_WARMUPS;
+  const parts = poolKey.split(':');
+  if (parts[0] === 'pt') {
+    const [, sel, lv, bucket] = parts;
+    return PT_WORKOUTS[sel]?.[lv]?.[parseInt(bucket)] || null;
+  }
+  if (parts[0] === 'general') {
+    const [, cat, lv] = parts;
+    return GENERAL_WORKOUTS[cat]?.[lv] || null;
+  }
+  if (parts[0] === 'fight') {
+    const [, sel, type, lv] = parts;
+    return FIGHT_WORKOUTS[sel]?.[type]?.[lv] || null;
+  }
+  return null;
+}
+
+// ── Set / Rep Adjustment ───────────────────────
+function adjustPrescription(btn, delta, type) {
+  const row = btn.closest('.exercise-row');
+  if (!row) return;
+  const rxEl = row.querySelector('.exercise-prescription');
+  if (!rxEl) return;
+  let text = rxEl.textContent;
+
+  if (type === 'sets') {
+    text = text.replace(/(\d+)\s*[×x]/, (m, n) => `${Math.max(1, parseInt(n) + delta)} ×`);
+  } else if (type === 'reps') {
+    text = text.replace(/[×x]\s*(\d+)/, (m, n) => `× ${Math.max(1, parseInt(n) + delta)}`);
+  } else if (type === 'time') {
+    text = text.replace(/(\d+)\s*min/, (m, n) => `${Math.max(1, parseInt(n) + delta)} min`);
+  }
+  rxEl.textContent = text;
+  row.classList.add('row-adjusted');
+  setTimeout(() => row.classList.remove('row-adjusted'), 400);
+}
+
+// ── Render workout sections with refresh + adjust ──
+function renderWorkoutSections(sections) {
+  return sections.map(section => {
+    const poolKey = section.poolKey || '';
+    const isTimed = section.heading.toLowerCase().includes('bag') ||
+                    section.heading.toLowerCase().includes('round');
+
+    const rows = section.items.map(ex => {
+      const hasNumeric = /\d+\s*[×x]\s*\d+/.test(ex.prescription || '');
+      const hasTimed   = /\d+\s*min/.test(ex.prescription || '') && !hasNumeric;
+
+      const adjBtns = hasNumeric ? `
+        <div class="adj-group">
+          <div class="adj-pair">
+            <span class="adj-label">Sets</span>
+            <button class="adj-btn" onclick="adjustPrescription(this,-1,'sets')">−</button>
+            <button class="adj-btn" onclick="adjustPrescription(this,1,'sets')">+</button>
+          </div>
+          <div class="adj-pair">
+            <span class="adj-label">Reps</span>
+            <button class="adj-btn" onclick="adjustPrescription(this,-1,'reps')">−</button>
+            <button class="adj-btn" onclick="adjustPrescription(this,1,'reps')">+</button>
+          </div>
+        </div>` : hasTimed ? `
+        <div class="adj-group">
+          <div class="adj-pair">
+            <span class="adj-label">Min</span>
+            <button class="adj-btn" onclick="adjustPrescription(this,-1,'time')">−</button>
+            <button class="adj-btn" onclick="adjustPrescription(this,1,'time')">+</button>
+          </div>
+        </div>` : '';
+
+      return `
+        <div class="exercise-row" data-pool-key="${poolKey}">
+          <div class="exercise-main">
+            <div class="exercise-name">${ex.name}</div>
+            ${ex.note ? `<div class="exercise-note">${ex.note}</div>` : ''}
+            ${adjBtns}
+          </div>
+          <div class="exercise-right">
+            <div class="exercise-prescription">${ex.prescription}</div>
+            <button class="refresh-ex-btn" onclick="refreshExercise(this)" title="Swap this exercise">↺</button>
+          </div>
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="workout-section">
+        <div class="workout-section-header">${section.heading}</div>
+        <div class="workout-section-body">${rows}</div>
+      </div>`;
+  }).join('');
+}
+
+// ── Init ───────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  check1RMOnStart();
   ['event-name-input', 'event-goal-input'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') addCustomEvent(); });
