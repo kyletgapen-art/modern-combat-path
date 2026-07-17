@@ -3,153 +3,142 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Modern Combat Path</title>
+  <title>Modern Combat Path — Train with Purpose</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    html, body {
-      height: 100%; width: 100%;
-      overflow: hidden;
-      background: #0d0505;
-      font-family: 'Courier New', 'Lucida Console', monospace;
+    :root {
+      --red: #e63946;
+      --red-dim: rgba(230,57,70,0.12);
+      --black: #0d0505;
+      --surface: #160808;
+      --steel: #1e0c0c;
+      --border: rgba(230,57,70,0.14);
+      --muted: rgba(200,150,150,0.55);
+      --text: rgba(245,238,238,0.88);
+      --mono: 'Courier New', 'Lucida Console', monospace;
     }
+
+    html { scroll-behavior: smooth; }
+
     body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
+      background: var(--black);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      overflow-x: hidden;
     }
 
-    /* ── Grid ── */
-    .bg-grid {
-      position: absolute; inset: 0; pointer-events: none;
+    /* ─── BLUEPRINT BACKGROUND ─── */
+    .bp-bg {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
       background-image:
-        linear-gradient(rgba(230,57,70,0.045) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(230,57,70,0.045) 1px, transparent 1px);
+        linear-gradient(rgba(230,57,70,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(230,57,70,0.04) 1px, transparent 1px);
       background-size: 52px 52px;
     }
-
-    /* ── Scan lines ── */
-    .bg-scanlines {
-      position: absolute; inset: 0; pointer-events: none;
+    .bp-scanlines {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
       background-image: repeating-linear-gradient(
         0deg, transparent, transparent 3px,
-        rgba(0,0,0,0.18) 3px, rgba(0,0,0,0.18) 4px
+        rgba(0,0,0,0.14) 3px, rgba(0,0,0,0.14) 4px
       );
     }
-
-    /* ── Centre radial glow ── */
-    .bg-glow {
-      position: absolute; inset: 0; pointer-events: none;
-      background: radial-gradient(ellipse 55% 55% at 50% 50%,
-        rgba(230,57,70,0.09) 0%, transparent 70%);
-    }
-
-    /* ── Animated sweep line ── */
-    .sweep {
-      position: absolute; left: 0; right: 0;
-      height: 2px; pointer-events: none;
+    .bp-sweep {
+      position: fixed; left: 0; right: 0; height: 2px;
+      pointer-events: none; z-index: 0;
       background: linear-gradient(to right,
         transparent 0%, rgba(230,57,70,0.0) 20%,
-        rgba(230,57,70,0.22) 50%,
+        rgba(230,57,70,0.18) 50%,
         rgba(230,57,70,0.0) 80%, transparent 100%);
-      animation: sweepDown 6s linear infinite;
+      animation: sweepDown 8s linear infinite;
     }
     @keyframes sweepDown {
       from { top: -4px; }
-      to   { top: 103%; }
+      to   { top: 105%; }
     }
 
-    /* ── Targeting reticle ── */
-    .reticle {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      width: min(90vw, 90vh);
-      height: min(90vw, 90vh);
-      opacity: 0.07;
-      pointer-events: none;
-      animation: reticleRotate 60s linear infinite;
-    }
-    @keyframes reticleRotate {
-      from { transform: translate(-50%, -50%) rotate(0deg); }
-      to   { transform: translate(-50%, -50%) rotate(360deg); }
+    /* ─── HERO SECTION (full viewport) ─── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
     }
 
-    /* ── HUD data blocks ── */
-    .hud {
-      position: absolute; inset: 0; pointer-events: none;
-      font-size: clamp(0.52rem, 1vw, 0.68rem);
-      color: rgba(230,57,70,0.28);
-      letter-spacing: 0.08em;
-      line-height: 1.9;
-      text-transform: uppercase;
-    }
-
-    .hud-block { position: absolute; }
-
-    .hud-tl { top: 64px; left: 68px; }
-    .hud-tr { top: 64px; right: 68px; text-align: right; }
-    .hud-bl { bottom: 64px; left: 68px; }
-    .hud-br { bottom: 64px; right: 68px; text-align: right; }
-
-    .hud-label { color: rgba(230,57,70,0.16); margin-right: 6px; }
-    .hud-val   { color: rgba(230,57,70,0.38); }
-    .hud-dot   { color: rgba(230,57,70,0.18); }
-
-    /* blinking cursor effect on one item */
-    .blink { animation: blink 1.4s step-end infinite; }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-
-    /* ── Status bar — top ── */
-    .status-bar {
-      position: absolute; top: 0; left: 0; right: 0;
-      height: 28px;
-      border-bottom: 1px solid rgba(230,57,70,0.12);
-      background: rgba(230,57,70,0.03);
-      display: flex; align-items: center;
-      justify-content: space-between;
-      padding: 0 20px;
-      font-size: 0.58rem; letter-spacing: 0.12em;
-      color: rgba(230,57,70,0.22);
-      pointer-events: none;
-    }
-    .status-bar-bot {
-      top: auto; bottom: 0;
-      border-top: 1px solid rgba(230,57,70,0.12);
-      border-bottom: none;
-    }
-
-    /* ── Corner brackets (larger, bolder) ── */
+    /* corner brackets */
     .corner {
       position: absolute; width: 42px; height: 42px;
       border-color: rgba(230,57,70,0.35); border-style: solid;
+      z-index: 2; pointer-events: none;
     }
     .corner-tl { top:28px; left:28px;   border-width:1px 0 0 1px; }
     .corner-tr { top:28px; right:28px;  border-width:1px 1px 0 0; }
     .corner-bl { bottom:28px; left:28px;  border-width:0 0 1px 1px; }
     .corner-br { bottom:28px; right:28px; border-width:0 1px 1px 0; }
 
-    /* ── Vertical side rules ── */
-    .side-rule {
-      position: absolute; top: 80px; bottom: 80px; width: 1px;
-      background: linear-gradient(to bottom,
-        transparent, rgba(230,57,70,0.1) 30%,
-        rgba(230,57,70,0.1) 70%, transparent);
-      pointer-events: none;
+    /* status bars */
+    .status-bar {
+      position: absolute; left:0; right:0; height:28px;
+      border-bottom: 1px solid rgba(230,57,70,0.12);
+      background: rgba(230,57,70,0.03);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 20px;
+      font-family: var(--mono);
+      font-size: 0.56rem; letter-spacing: 0.12em;
+      color: rgba(230,57,70,0.22); pointer-events: none; z-index: 2;
     }
-    .side-rule-l { left: 28px; }
-    .side-rule-r { right: 28px; }
+    .status-bar-top { top: 0; }
+    .status-bar-bot { bottom:0; border-top:1px solid rgba(230,57,70,0.12); border-bottom:none; }
 
-    /* ── Main content ── */
-    .content {
+    /* HUD blocks */
+    .hud {
+      position: absolute; inset: 0; pointer-events: none; z-index: 2;
+      font-family: var(--mono);
+      font-size: clamp(0.48rem, 0.9vw, 0.65rem);
+      color: rgba(230,57,70,0.25);
+      letter-spacing: 0.08em; line-height: 1.9; text-transform: uppercase;
+    }
+    .hud-block { position: absolute; }
+    .hud-tl { top:56px; left:60px; }
+    .hud-tr { top:56px; right:60px; text-align:right; }
+    .hud-bl { bottom:56px; left:60px; }
+    .hud-br { bottom:56px; right:60px; text-align:right; }
+    .hud-val   { color: rgba(230,57,70,0.40); }
+    .hud-label { color: rgba(230,57,70,0.16); margin-right:4px; }
+    .hud-dot   { color: rgba(230,57,70,0.14); }
+    .blink { animation: blink 1.4s step-end infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* targeting reticle */
+    .reticle {
+      position: absolute; top:50%; left:50%;
+      transform: translate(-50%,-50%);
+      width: min(88vw, 88vh); height: min(88vw, 88vh);
+      opacity: 0.065; pointer-events: none; z-index: 1;
+      animation: reticleRotate 60s linear infinite;
+    }
+    @keyframes reticleRotate {
+      from { transform: translate(-50%,-50%) rotate(0deg); }
+      to   { transform: translate(-50%,-50%) rotate(360deg); }
+    }
+
+    /* glow */
+    .bg-glow {
+      position: absolute; inset:0; pointer-events:none; z-index:1;
+      background: radial-gradient(ellipse 50% 50% at 50% 50%,
+        rgba(230,57,70,0.07) 0%, transparent 70%);
+    }
+
+    /* hero content */
+    .hero-content {
       position: relative; z-index: 10;
       text-align: center; padding: 20px;
-      font-family: 'Segoe UI', system-ui, sans-serif;
       animation: contentRise 1.4s ease 0.2s both;
     }
     @keyframes contentRise {
-      from { opacity:0; transform:translateY(16px); }
+      from { opacity:0; transform:translateY(18px); }
       to   { opacity:1; transform:translateY(0); }
     }
 
@@ -160,16 +149,15 @@
 
     .word-modern {
       display: block; margin: 18px 0 5px;
-      font-size: clamp(0.9rem, 3.2vw, 2rem);
+      font-size: clamp(0.9rem, 3vw, 1.8rem);
       font-weight: 300; letter-spacing: 0.6em;
-      color: rgba(245,238,238,0.58);
-      text-transform: uppercase;
+      color: rgba(245,238,238,0.55); text-transform: uppercase;
     }
     .word-combat {
       display: block;
-      font-size: clamp(3.5rem, 12.5vw, 9.5rem);
+      font-size: clamp(3.5rem, 11vw, 9rem);
       font-weight: 900; letter-spacing: 0.06em;
-      color: #e63946; text-transform: uppercase; line-height: 0.88;
+      color: var(--red); text-transform: uppercase; line-height: 0.88;
       text-shadow:
         0 0 30px rgba(230,57,70,0.40),
         0 0 70px rgba(230,57,70,0.18),
@@ -177,70 +165,373 @@
     }
     .word-path {
       display: block; margin: 5px 0 18px;
-      font-size: clamp(0.9rem, 3.2vw, 2rem);
+      font-size: clamp(0.9rem, 3vw, 1.8rem);
       font-weight: 300; letter-spacing: 0.6em;
-      color: rgba(245,238,238,0.58);
-      text-transform: uppercase;
+      color: rgba(245,238,238,0.55); text-transform: uppercase;
     }
 
     .catchphrase {
-      font-family: 'Courier New', monospace;
-      font-size: clamp(0.55rem, 1.3vw, 0.74rem);
-      color: rgba(180,120,120,0.75);
+      font-family: var(--mono);
+      font-size: clamp(0.52rem, 1.2vw, 0.72rem);
+      color: rgba(180,120,120,0.70);
       letter-spacing: 0.28em; text-transform: uppercase;
-      margin: 24px 0 42px;
+      margin: 22px 0 36px;
+    }
+
+    .scroll-hint {
+      font-family: var(--mono);
+      font-size: 0.58rem; letter-spacing: 0.2em;
+      color: rgba(230,57,70,0.35); text-transform: uppercase;
+      margin-top: 24px;
+      animation: bounce 2.5s ease-in-out infinite;
+    }
+    @keyframes bounce {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(6px); }
+    }
+
+    /* ─── SHARED SECTION STYLES ─── */
+    section {
+      position: relative; z-index: 5;
+      padding: 70px 5vw;
+    }
+
+    .section-divider {
+      width: 100%; height: 1px; position: relative; z-index: 5;
+      background: linear-gradient(to right,
+        transparent, rgba(230,57,70,0.18) 30%,
+        rgba(230,57,70,0.18) 70%, transparent);
+    }
+
+    .eyebrow {
+      font-family: var(--mono);
+      font-size: 0.62rem; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--red);
+      margin-bottom: 10px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .eyebrow::before {
+      content: ''; display: block;
+      width: 24px; height: 1px; background: var(--red);
+    }
+
+    .section-title {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 900; line-height: 0.95;
+      text-transform: uppercase; letter-spacing: 0.04em;
+      margin-bottom: 14px;
+    }
+    .section-title .red { color: var(--red); }
+
+    .section-sub {
+      font-size: 0.95rem; color: var(--muted);
+      line-height: 1.7; max-width: 580px;
+      margin-bottom: 48px;
+    }
+
+    /* ─── FEATURE CARDS GRID ─── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 2px;
+      background: rgba(230,57,70,0.08);
+    }
+
+    .card {
+      background: var(--surface);
+      padding: 28px 26px;
+      position: relative;
+      transition: background 0.25s;
+      border-left: 2px solid transparent;
+    }
+    .card:hover {
+      background: var(--steel);
+      border-left-color: var(--red);
+    }
+
+    .card-icon {
+      font-family: var(--mono);
+      font-weight: 900;
+      font-size: 2rem;
+      color: rgba(230,57,70,0.18);
+      line-height: 1;
+      margin-bottom: 14px;
+      transition: color 0.25s;
+    }
+    .card:hover .card-icon { color: rgba(230,57,70,0.45); }
+
+    .card-title {
+      font-size: 1rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin-bottom: 8px; color: var(--text);
+    }
+
+    .card-desc {
+      font-size: 0.82rem; color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .card-tags {
+      margin-top: 14px;
+      display: flex; flex-wrap: wrap; gap: 5px;
+    }
+    .tag {
+      font-family: var(--mono);
+      font-size: 0.56rem; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 3px 8px;
+      border: 1px solid rgba(230,57,70,0.2);
+      color: rgba(230,57,70,0.5);
+    }
+
+    /* ─── STATS ROW ─── */
+    .stats-row {
+      display: flex; flex-wrap: wrap; gap: 0;
+      background: rgba(230,57,70,0.06);
+      border: 1px solid var(--border);
+      margin-bottom: 48px;
+    }
+    .stat-block {
+      flex: 1; min-width: 120px;
+      padding: 22px 24px;
+      border-right: 1px solid var(--border);
+    }
+    .stat-block:last-child { border-right: none; }
+    .stat-val {
+      font-family: var(--mono);
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 900; color: var(--red); line-height: 1;
+    }
+    .stat-label {
+      font-family: var(--mono);
+      font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted); margin-top: 5px;
+    }
+
+    /* ─── HOW IT WORKS STEPS ─── */
+    .steps {
+      display: grid; gap: 0;
+      border: 1px solid var(--border);
+    }
+    .step {
+      display: grid; grid-template-columns: 60px 1fr;
+      gap: 0; padding: 24px 28px;
+      border-bottom: 1px solid var(--border);
+      align-items: start;
+    }
+    .step:last-child { border-bottom: none; }
+    .step-num {
+      font-family: var(--mono); font-size: 1.6rem;
+      font-weight: 900; color: rgba(230,57,70,0.3);
+      line-height: 1; padding-top: 2px;
+    }
+    .step-title {
+      font-size: 0.95rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      margin-bottom: 5px;
+    }
+    .step-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+    /* ─── PT STANDARDS BLOCK ─── */
+    .standards-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 22px 28px;
+    }
+    .standards-header {
+      font-family: var(--mono); font-size: 0.6rem;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--red); margin-bottom: 16px;
+    }
+    .standard-row {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(230,57,70,0.06);
+    }
+    .standard-row:last-child { border-bottom: none; }
+    .standard-name {
+      font-size: 0.88rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .standard-branch {
+      font-family: var(--mono); font-size: 0.58rem;
+      color: var(--muted); margin-top: 2px;
+    }
+    .standard-badge {
+      font-family: var(--mono); font-size: 0.55rem;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 3px 7px;
+      background: rgba(230,57,70,0.10);
+      color: var(--red);
+      border: 1px solid rgba(230,57,70,0.2);
+    }
+
+    /* ─── TWO-COLUMN LAYOUT ─── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: start;
+    }
+    @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+    /* ─── CTA / ENTER SECTION ─── */
+    .cta-section {
+      text-align: center;
+      padding: 80px 5vw 100px;
+      position: relative; z-index: 5;
     }
 
     .enter-btn {
-      display: inline-block; padding: 12px 50px;
-      border: 1px solid rgba(230,57,70,0.42);
-      color: rgba(245,238,238,0.72); text-decoration: none;
-      font-family: 'Courier New', monospace;
-      font-size: 0.7rem; letter-spacing: 0.42em; text-transform: uppercase;
+      display: inline-block; padding: 16px 60px;
+      border: 1px solid rgba(230,57,70,0.45);
+      color: rgba(245,238,238,0.8); text-decoration: none;
+      font-family: var(--mono);
+      font-size: 0.75rem; letter-spacing: 0.45em; text-transform: uppercase;
       transition: all 0.3s ease; position: relative; overflow: hidden;
       animation: pulseBorder 3.5s ease-in-out infinite;
+      margin-top: 36px;
     }
     .enter-btn::before {
-      content: ''; position: absolute;
-      left: -100%; top: 0; width: 100%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(230,57,70,0.08), transparent);
+      content: ''; position: absolute; left:-100%; top:0;
+      width:100%; height:100%;
+      background: linear-gradient(90deg, transparent, rgba(230,57,70,0.1), transparent);
       transition: left 0.4s ease;
     }
-    .enter-btn:hover { border-color: rgba(230,57,70,0.9); color: #fff; animation: none;
-      text-shadow: 0 0 10px rgba(230,57,70,0.5); }
+    .enter-btn:hover {
+      border-color: rgba(230,57,70,0.9); color: #fff;
+      animation: none;
+      text-shadow: 0 0 12px rgba(230,57,70,0.5);
+      background: rgba(230,57,70,0.06);
+    }
     .enter-btn:hover::before { left: 100%; }
     @keyframes pulseBorder {
       0%,100% { border-color: rgba(230,57,70,0.38); }
-      50%      { border-color: rgba(230,57,70,0.72); }
+      50%      { border-color: rgba(230,57,70,0.75); }
+    }
+
+    /* sticky nav */
+    .sticky-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 44px;
+      background: rgba(13,5,5,0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(230,57,70,0.1);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .sticky-nav.visible { opacity: 1; pointer-events: auto; }
+    .nav-logo {
+      font-family: var(--mono); font-size: 0.72rem;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--red); text-decoration: none;
+    }
+    .nav-enter {
+      font-family: var(--mono); font-size: 0.6rem;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      background: var(--red); color: #fff;
+      padding: 6px 16px; text-decoration: none;
+      transition: background 0.2s;
+    }
+    .nav-enter:hover { background: #ff3d33; }
+
+    /* ticker */
+    .ticker {
+      background: var(--red); overflow: hidden;
+      height: 32px; display: flex; align-items: center;
+      position: relative; z-index: 5;
+    }
+    .ticker-track {
+      display: flex; white-space: nowrap;
+      animation: tickerMove 28s linear infinite;
+    }
+    @keyframes tickerMove {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    .ticker-item {
+      font-family: var(--mono); font-size: 0.6rem;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      padding: 0 2rem; color: rgba(255,255,255,0.85);
+    }
+    .ticker-sep { color: rgba(255,255,255,0.35); padding: 0; }
+
+    .section-alt { background: rgba(0,0,0,0.3); }
+
+    /* ─── QUICK-ACCESS CARDS ─── */
+    .quick-card {
+      display: flex; flex-direction: column; align-items: center;
+      width: 160px; padding: 20px 16px;
+      background: var(--surface);
+      border: 1px solid rgba(230,57,70,0.2);
+      text-decoration: none; color: var(--text);
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+      position: relative; overflow: hidden;
+    }
+    .quick-card::after {
+      content: ''; position: absolute;
+      bottom: 0; left: 0; width: 0; height: 2px;
+      background: var(--red); transition: width 0.3s;
+    }
+    .quick-card:hover {
+      background: var(--steel);
+      border-color: rgba(230,57,70,0.55);
+      transform: translateY(-3px);
+    }
+    .quick-card:hover::after { width: 100%; }
+    .qc-icon {
+      font-family: var(--mono); font-weight: 900;
+      font-size: 1.4rem; color: rgba(230,57,70,0.35);
+      margin-bottom: 10px; line-height: 1;
+      transition: color 0.2s;
+    }
+    .quick-card:hover .qc-icon { color: rgba(230,57,70,0.7); }
+    .qc-title {
+      font-size: 0.78rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      margin-bottom: 4px; color: var(--text);
+    }
+    .qc-sub {
+      font-family: var(--mono); font-size: 0.56rem;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--muted); text-align: center; line-height: 1.4;
     }
   </style>
 </head>
 <body>
 
-  <!-- Background layers -->
-  <div class="bg-grid"></div>
-  <div class="bg-scanlines"></div>
-  <div class="bg-glow"></div>
-  <div class="sweep"></div>
+<!-- Fixed blueprint layers -->
+<div class="bp-bg"></div>
+<div class="bp-scanlines"></div>
+<div class="bp-sweep"></div>
 
-  <!-- Targeting reticle -->
+<!-- Sticky nav (appears after scrolling) -->
+<nav class="sticky-nav" id="stickyNav">
+  <span class="nav-logo">Modern Combat Path</span>
+  <a class="nav-enter" href="app.html">Enter App →</a>
+</nav>
+
+<!-- ─── HERO ─── -->
+<div class="hero" id="hero">
+  <div class="bg-glow"></div>
+
+  <!-- Reticle -->
   <svg class="reticle" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#e63946">
     <circle cx="400" cy="400" r="370" stroke-width="0.8"/>
     <circle cx="400" cy="400" r="280" stroke-width="0.8"/>
     <circle cx="400" cy="400" r="190" stroke-width="1.2"/>
     <circle cx="400" cy="400" r="100" stroke-width="1.2"/>
     <circle cx="400" cy="400" r="22"  stroke-width="1.5"/>
-    <!-- Crosshair lines with gap at center -->
     <line x1="0"   y1="400" x2="268" y2="400" stroke-width="0.8"/>
     <line x1="532" y1="400" x2="800" y2="400" stroke-width="0.8"/>
     <line x1="400" y1="0"   x2="400" y2="268" stroke-width="0.8"/>
     <line x1="400" y1="532" x2="400" y2="800" stroke-width="0.8"/>
-    <!-- Diagonal marks at 45° -->
     <line x1="220" y1="220" x2="248" y2="248" stroke-width="0.8"/>
     <line x1="580" y1="220" x2="552" y2="248" stroke-width="0.8"/>
     <line x1="220" y1="580" x2="248" y2="552" stroke-width="0.8"/>
     <line x1="580" y1="580" x2="552" y2="552" stroke-width="0.8"/>
-    <!-- Tick marks on outer ring — every 30° -->
     <line x1="400" y1="30"  x2="400" y2="52"  stroke-width="1"/>
     <line x1="585" y1="80"  x2="574" y2="99"  stroke-width="1"/>
     <line x1="720" y1="215" x2="701" y2="226" stroke-width="1"/>
@@ -256,7 +547,7 @@
   </svg>
 
   <!-- Status bars -->
-  <div class="status-bar">
+  <div class="status-bar status-bar-top">
     <span>MCP // SYSTEM ONLINE</span>
     <span>ACCESS LEVEL: OPERATOR</span>
     <span>AUTHENTICATION: VERIFIED</span>
@@ -275,22 +566,18 @@
   <div class="corner corner-bl"></div>
   <div class="corner corner-br"></div>
 
-  <!-- Vertical side rules -->
-  <div class="side-rule side-rule-l"></div>
-  <div class="side-rule side-rule-r"></div>
-
-  <!-- HUD data blocks -->
+  <!-- HUD data -->
   <div class="hud">
     <div class="hud-block hud-tl">
       <div><span class="hud-label">MISSION</span><span class="hud-dot">............</span><span class="hud-val">ACTIVE</span></div>
       <div><span class="hud-label">THREAT LVL</span><span class="hud-dot">.........</span><span class="hud-val">HIGH</span></div>
       <div><span class="hud-label">PROTOCOL</span><span class="hud-dot">..........</span><span class="hud-val">COMBAT</span></div>
-      <div style="margin-top:8px"><span class="hud-label">DISCIPLINES LOADED</span><span class="hud-dot">.</span><span class="hud-val">4</span></div>
+      <div style="margin-top:8px"><span class="hud-label">DISCIPLINES</span><span class="hud-dot">....….</span><span class="hud-val">4 LOADED</span></div>
     </div>
     <div class="hud-block hud-tr">
       <div><span class="hud-val">PT TESTS</span><span class="hud-dot">.........</span><span class="hud-label">7 LOADED</span></div>
       <div><span class="hud-val">FIGHT MODES</span><span class="hud-dot">.....</span><span class="hud-label">3 LOADED</span></div>
-      <div><span class="hud-val">GEN FITNESS</span><span class="hud-dot">.....</span><span class="hud-label">7 LOADED</span></div>
+      <div><span class="hud-val">GEN FITNESS</span><span class="hud-dot">.....</span><span class="hud-label">11 LOADED</span></div>
       <div style="margin-top:8px"><span class="hud-val">PLAN GEN</span><span class="hud-dot">.........</span><span class="hud-label">ONLINE <span class="blink">_</span></span></div>
     </div>
     <div class="hud-block hud-bl">
@@ -300,21 +587,371 @@
     </div>
     <div class="hud-block hud-br">
       <div><span class="hud-val">PROGRESSIVE</span><span class="hud-dot">......</span><span class="hud-label">ENABLED</span></div>
-      <div><span class="hud-val">PDF EXPORT</span><span class="hud-dot">....….</span><span class="hud-label">ENABLED</span></div>
+      <div><span class="hud-val">1RM TRACKER</span><span class="hud-dot">..….</span><span class="hud-label">ENABLED</span></div>
       <div><span class="hud-val">CUSTOM TESTS</span><span class="hud-dot">..….</span><span class="hud-label">ENABLED</span></div>
     </div>
   </div>
 
-  <!-- ── Main content ── -->
-  <div class="content">
+  <!-- Main title -->
+  <div class="hero-content">
     <div class="rule"></div>
     <span class="word-modern">Modern</span>
     <span class="word-combat">Combat</span>
     <span class="word-path">Path</span>
     <div class="rule"></div>
     <div class="catchphrase">Train with purpose &nbsp;·&nbsp; Fight ready</div>
-    <a href="index.html" class="enter-btn">Enter &nbsp;→</a>
+    <div class="scroll-hint">▼ &nbsp; Discover the platform &nbsp; ▼</div>
   </div>
+</div>
+
+<!-- ─── TICKER ─── -->
+<div class="ticker">
+  <div class="ticker-track">
+    <span class="ticker-item">PT Test Prep</span><span class="ticker-sep">·</span>
+    <span class="ticker-item">Fight Night</span><span class="ticker-sep">·</span>
+    <span class="ticker-item">General Fitness</span><span class="ticker-sep">·</span>
+    <span class="ticker-item">1RM Tracker</span><span class="ticker-sep">·</span>
+    <span class="ticker-item">Training Plans</span><span class="ticker-sep">·</span>
+    <span class="ticker-item">Workout Timer</span><span class="ticker-sep">·</span>
+    <span class="ticker-item">Progress Tracking</span><span class="ticker-sep">·</span>
+    <span class="ticker-item">Custom PT Tests</span><span class="ticker-sep">·</span>
+    <span class="ticker-item">MMA · BJJ · Boxing · Muay Thai</span><span class="ticker-sep">·</span>
+    <span class="ticker-item">Yoga · Pilates · HIIT · CrossFit</span><span class="ticker-sep">·</span>
+    <span class="ticker-item">PT Test Prep</span><span class="ticker-sep">·</span>
+    <span class="ticker-item">Fight Night</span><span class="ticker-sep">·</span>
+    <span class="ticker-item">General Fitness</span><span class="ticker-sep">·</span>
+    <span class="ticker-item">1RM Tracker</span><span class="ticker-sep">·</span>
+    <span class="ticker-item">Training Plans</span><span class="ticker-sep">·</span>
+    <span class="ticker-item">Workout Timer</span><span class="ticker-sep">·</span>
+    <span class="ticker-item">Progress Tracking</span><span class="ticker-sep">·</span>
+    <span class="ticker-item">Custom PT Tests</span><span class="ticker-sep">·</span>
+    <span class="ticker-item">MMA · BJJ · Boxing · Muay Thai</span><span class="ticker-sep">·</span>
+    <span class="ticker-item">Yoga · Pilates · HIIT · CrossFit</span><span class="ticker-sep">·</span>
+  </div>
+</div>
+
+<!-- ─── STATS + OVERVIEW ─── -->
+<section>
+  <div class="stats-row">
+    <div class="stat-block">
+      <div class="stat-val">7</div>
+      <div class="stat-label">PT Standards</div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-val">3</div>
+      <div class="stat-label">Fight Disciplines</div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-val">11</div>
+      <div class="stat-label">Fitness Categories</div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-val">5</div>
+      <div class="stat-label">Training Phases</div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-val">8wk</div>
+      <div class="stat-label">Max Plan Length</div>
+    </div>
+  </div>
+
+  <div class="eyebrow">The Platform</div>
+  <div class="section-title">Everything You<br>Need to <span class="red">Perform.</span></div>
+  <p class="section-sub">Modern Combat Path is a full-featured workout generator built for military, combat athletes, and serious fitness. Generate complete workouts instantly, track your baselines, and build periodized training plans — all in one place.</p>
+
+  <div class="cards-grid">
+    <div class="card">
+      <div class="card-icon">PT</div>
+      <div class="card-title">PT Test Prep</div>
+      <div class="card-desc">Structured workouts targeting the exact standards of your branch's physical fitness test. Choose your test, set the difficulty, generate a session.</div>
+      <div class="card-tags">
+        <span class="tag">ACFT</span><span class="tag">USMC PFT/CFT</span>
+        <span class="tag">Navy PRT</span><span class="tag">Air Force PFT</span>
+        <span class="tag">CPAT</span><span class="tag">LEO PAT</span><span class="tag">PAST</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon">MMA</div>
+      <div class="card-title">Fight Night</div>
+      <div class="card-desc">Combat sports conditioning for striking and grappling athletes. Full sessions with drilling rounds, technique work, and sport-specific conditioning built in.</div>
+      <div class="card-tags">
+        <span class="tag">MMA</span><span class="tag">Boxing / Muay Thai</span><span class="tag">BJJ / Wrestling</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon">GEN</div>
+      <div class="card-title">General Fitness</div>
+      <div class="card-desc">11 workout categories covering every goal — from explosive plyometrics and CrossFit to yoga, pilates, and recovery. Sessions scale to your selected time block.</div>
+      <div class="card-tags">
+        <span class="tag">Strength</span><span class="tag">HIIT</span><span class="tag">Cardio</span>
+        <span class="tag">CrossFit</span><span class="tag">Yoga</span><span class="tag">Pilates</span><span class="tag">Mobility</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon">1RM</div>
+      <div class="card-title">Baseline Tracker</div>
+      <div class="card-desc">Log your Deadlift, Bench Press, and 1-Mile Run. Use the Epley formula to calculate estimated maxes, and let the app prescribe your working weights automatically.</div>
+      <div class="card-tags">
+        <span class="tag">Deadlift</span><span class="tag">Bench Press</span>
+        <span class="tag">1-Mile Run</span><span class="tag">Epley Formula</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ─── PT STANDARDS ─── -->
+<section class="section-alt">
+  <div class="two-col">
+    <div>
+      <div class="eyebrow">PT Test Prep</div>
+      <div class="section-title">Built for<br><span class="red">Your Standard.</span></div>
+      <p class="section-sub">Select your branch's physical fitness test and Modern Combat Path builds workouts targeting exactly those events — pushups, pullups, run times, strength events, and more. Add custom test formats for any non-standard requirements.</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <div>
+            <div class="step-title">Pick Your PT Test</div>
+            <div class="step-desc">Choose from 7 official standards or build a custom test with your own scoring events.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <div>
+            <div class="step-title">Set Difficulty & Duration</div>
+            <div class="step-desc">Easy through Very Difficult. 30, 45, 60, or 90-minute sessions. The workout scales to fit.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <div>
+            <div class="step-title">Generate & Train</div>
+            <div class="step-desc">Full session with warm-up, main work, and cool-down generated instantly. Swap any exercise you don't like.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="standards-block">
+      <div class="standards-header">Supported Standards</div>
+      <div class="standard-row">
+        <div>
+          <div class="standard-name">ACFT</div>
+          <div class="standard-branch">U.S. Army Combat Fitness Test</div>
+        </div>
+        <div class="standard-badge">Live</div>
+      </div>
+      <div class="standard-row">
+        <div>
+          <div class="standard-name">PFT / CFT</div>
+          <div class="standard-branch">U.S. Marine Corps</div>
+        </div>
+        <div class="standard-badge">Live</div>
+      </div>
+      <div class="standard-row">
+        <div>
+          <div class="standard-name">PRT</div>
+          <div class="standard-branch">U.S. Navy</div>
+        </div>
+        <div class="standard-badge">Live</div>
+      </div>
+      <div class="standard-row">
+        <div>
+          <div class="standard-name">PFT</div>
+          <div class="standard-branch">U.S. Air Force / Space Force</div>
+        </div>
+        <div class="standard-badge">Live</div>
+      </div>
+      <div class="standard-row">
+        <div>
+          <div class="standard-name">PAST</div>
+          <div class="standard-branch">SOWT / PJ / CCT Pipeline</div>
+        </div>
+        <div class="standard-badge">Live</div>
+      </div>
+      <div class="standard-row">
+        <div>
+          <div class="standard-name">CPAT</div>
+          <div class="standard-branch">Fire Service</div>
+        </div>
+        <div class="standard-badge">Live</div>
+      </div>
+      <div class="standard-row">
+        <div>
+          <div class="standard-name">PAT / POPAT</div>
+          <div class="standard-branch">Law Enforcement</div>
+        </div>
+        <div class="standard-badge">Live</div>
+      </div>
+      <div class="standard-row">
+        <div>
+          <div class="standard-name">Custom Standard</div>
+          <div class="standard-branch">User-Defined Events</div>
+        </div>
+        <div class="standard-badge">Live</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ─── FIGHT NIGHT ─── -->
+<section>
+  <div class="eyebrow">Fight Night</div>
+  <div class="section-title">Train Like a<br><span class="red">Fighter.</span></div>
+  <p class="section-sub">Combat sports conditioning built for athletes who compete or train to compete. Each session includes warm-up, drilling rounds, technique blocks, and sport conditioning — structured like an actual camp.</p>
+
+  <div class="cards-grid">
+    <div class="card">
+      <div class="card-icon">MMA</div>
+      <div class="card-title">Mixed Martial Arts</div>
+      <div class="card-desc">Full MMA conditioning: striking, takedowns, grappling, and fitness rounds. Periodized phases from base conditioning to fight-week peak.</div>
+      <div class="card-tags">
+        <span class="tag">Striking</span><span class="tag">Grappling</span>
+        <span class="tag">Conditioning</span><span class="tag">Fight Camp</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon">BOX</div>
+      <div class="card-title">Boxing & Muay Thai</div>
+      <div class="card-desc">Striking-focused sessions with roadwork, pad work integration, power development, and round structure for bag and pad training.</div>
+      <div class="card-tags">
+        <span class="tag">Roadwork</span><span class="tag">Shadow / Bag</span>
+        <span class="tag">Power</span><span class="tag">Sparring Prep</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon">BJJ</div>
+      <div class="card-title">BJJ & Wrestling</div>
+      <div class="card-desc">Grappling-specific strength and conditioning. Position drilling, submission chains, wrestling shot drills, and mat-conditioning circuits.</div>
+      <div class="card-tags">
+        <span class="tag">Drilling</span><span class="tag">Takedowns</span>
+        <span class="tag">Mat Strength</span><span class="tag">Competition Prep</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ─── GENERAL FITNESS ─── -->
+<section class="section-alt">
+  <div class="eyebrow">General Fitness</div>
+  <div class="section-title">Every Goal.<br><span class="red">Every Category.</span></div>
+  <p class="section-sub">11 fitness categories from explosive plyometrics to restorative yoga. Sessions automatically scale to your selected time window — 30, 45, 60, or 90 minutes — with the right number of exercises to actually fill that time.</p>
+
+  <div class="cards-grid">
+    <div class="card">
+      <div class="card-icon">STR</div>
+      <div class="card-title">Strength Training</div>
+      <div class="card-desc">Upper body, lower body, and core sessions with compound movements and progressive overload structure. Scales from beginner to advanced.</div>
+      <div class="card-tags"><span class="tag">Upper Body</span><span class="tag">Lower Body</span><span class="tag">Core</span></div>
+    </div>
+    <div class="card">
+      <div class="card-icon">HIIT</div>
+      <div class="card-title">High Intensity</div>
+      <div class="card-desc">HIIT circuits, CrossFit-style WODs, and Hyrox-specific conditioning. Time-efficient sessions with maximum output.</div>
+      <div class="card-tags"><span class="tag">HIIT</span><span class="tag">CrossFit</span><span class="tag">Hyrox</span><span class="tag">Cardio</span></div>
+    </div>
+    <div class="card">
+      <div class="card-icon">PLY</div>
+      <div class="card-title">Agility & Plyometrics</div>
+      <div class="card-desc">Explosive power training: box jumps, broad jumps, depth drops, sprint drills. Built for athletic performance and speed development.</div>
+      <div class="card-tags"><span class="tag">Plyometrics</span><span class="tag">Agility</span><span class="tag">Explosive Power</span></div>
+    </div>
+    <div class="card">
+      <div class="card-icon">REC</div>
+      <div class="card-title">Recovery & Mobility</div>
+      <div class="card-desc">Yoga poses, Pilates mat work, and mobility flows. No warm-up needed — these sessions are built to move you through complete ranges of motion from the start.</div>
+      <div class="card-tags"><span class="tag">Yoga</span><span class="tag">Pilates</span><span class="tag">Mobility</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ─── TOOLS & FEATURES ─── -->
+<section>
+  <div class="eyebrow">Platform Features</div>
+  <div class="section-title">More Than a<br><span class="red">Workout Generator.</span></div>
+  <p class="section-sub">Modern Combat Path includes a full suite of tools to train smarter — not just harder.</p>
+
+  <div class="cards-grid">
+    <div class="card">
+      <div class="card-icon">PLN</div>
+      <div class="card-title">8-Week Training Plans</div>
+      <div class="card-desc">Periodized plans spanning up to 8 weeks with 5 distinct phases: Foundation, Build, Power, Peak, and Taper. Each phase automatically adjusts volume, intensity, and rest.</div>
+      <div class="card-tags">
+        <span class="tag">Foundation</span><span class="tag">Build</span>
+        <span class="tag">Power</span><span class="tag">Peak</span><span class="tag">Taper</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon">⏱</div>
+      <div class="card-title">Built-in Timer</div>
+      <div class="card-desc">Countdown and stopwatch modes. Rest timers integrated into every workout session so you know exactly when to work and when to rest.</div>
+      <div class="card-tags"><span class="tag">Countdown</span><span class="tag">Stopwatch</span><span class="tag">Rest Timer</span></div>
+    </div>
+    <div class="card">
+      <div class="card-icon">LOG</div>
+      <div class="card-title">Workout Log</div>
+      <div class="card-desc">Track completed sessions with dates and notes. All data stays on your device — no account required, no cloud dependency, no subscription.</div>
+      <div class="card-tags"><span class="tag">Session History</span><span class="tag">Local Storage</span><span class="tag">No Account</span></div>
+    </div>
+    <div class="card">
+      <div class="card-icon">↺</div>
+      <div class="card-title">Swap Any Exercise</div>
+      <div class="card-desc">Don't like an exercise? Hit the refresh button next to it and get a different one from the same category and difficulty level. Build the session you actually want.</div>
+      <div class="card-tags"><span class="tag">Per-Exercise Swap</span><span class="tag">Same Category</span><span class="tag">Same Level</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ─── CTA ─── -->
+<div class="cta-section">
+  <div style="position:relative; z-index:2;">
+    <div class="eyebrow" style="justify-content:center; margin-bottom:16px;">Ready to Operate</div>
+    <div style="font-size:clamp(3rem,8vw,6rem); font-weight:900; text-transform:uppercase; letter-spacing:0.04em; line-height:0.9; color:var(--text);">
+      Enter the<br><span style="color:var(--red);">Combat</span><br>Path
+    </div>
+    <div style="font-family:var(--mono); font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); margin-top:20px;">
+      No account. No subscription. Train now.
+    </div>
+
+    <!-- Quick-access category cards -->
+    <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:12px; margin-top:36px; margin-bottom:8px;">
+      <a href="app.html?s=pt" class="quick-card">
+        <div class="qc-icon">PT</div>
+        <div class="qc-title">PT Test Prep</div>
+        <div class="qc-sub">Military &amp; Law Enforcement</div>
+      </a>
+      <a href="app.html?s=fight" class="quick-card">
+        <div class="qc-icon">MMA</div>
+        <div class="qc-title">Fight Night</div>
+        <div class="qc-sub">Combat Sports Conditioning</div>
+      </a>
+      <a href="app.html?s=general" class="quick-card">
+        <div class="qc-icon">GEN</div>
+        <div class="qc-title">General Fitness</div>
+        <div class="qc-sub">11 Workout Categories</div>
+      </a>
+    </div>
+
+    <a href="app.html" class="enter-btn" style="margin-top:20px;">Enter &nbsp;→</a>
+  </div>
+</div>
+
+<script>
+  const hero = document.getElementById('hero');
+  const nav = document.getElementById('stickyNav');
+  const observer = new IntersectionObserver(([e]) => {
+    nav.classList.toggle('visible', !e.isIntersecting);
+  }, { threshold: 0.1 });
+  observer.observe(hero);
+</script>
 
 </body>
 </html>

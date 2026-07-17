@@ -388,9 +388,7 @@ function resolvePool(poolKey) {
   if (poolKey === 'mt-drills')  return MT_DRILLS.map(d => ({ name: d.name, note: d.desc }));
   if (poolKey.startsWith('bjj-drills:'))  return BJJ_DRILLS[poolKey.split(':')[1]] || null;
   if (poolKey.startsWith('judo-drills:')) return JUDO_DRILLS[poolKey.split(':')[1]] || null;
-  if (poolKey === 'warmup:active')  return WARMUPS.active;
-  if (poolKey === 'warmup:general') return WARMUPS.general;
-  if (poolKey === 'warmup:mt')      return MT_WARMUPS;
+  if (poolKey === 'warmup:general' || poolKey === 'warmup:active' || poolKey === 'warmup:mt') return WARMUPS;
   const parts = poolKey.split(':');
   if (parts[0] === 'pt') {
     const [, sel, lv, bucket] = parts;
@@ -483,7 +481,11 @@ function renderWorkoutSections(sections) {
 
 // ── Init ───────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  check1RMOnStart();
+  const section = new URLSearchParams(window.location.search).get('s');
+  if (section === 'pt')      { check1RMOnStart(); showScreen('pt-select'); }
+  else if (section === 'fight')   { check1RMOnStart(); showScreen('fight-select'); }
+  else if (section === 'general') { check1RMOnStart(); showScreen('general-select'); }
+  else { check1RMOnStart(); }
   ['event-name-input', 'event-goal-input'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') addCustomEvent(); });

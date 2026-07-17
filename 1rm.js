@@ -5,6 +5,7 @@
 const ORM_LIFTS = [
   { key: 'deadlift', label: 'Deadlift',    unit: 'lbs', icon: '🏋️' },
   { key: 'bench',    label: 'Bench Press', unit: 'lbs', icon: '💪' },
+  { key: 'squat',    label: 'Back Squat',  unit: 'lbs', icon: '🦵' },
 ];
 
 // Epley Formula — NSCA standard

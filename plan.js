@@ -296,9 +296,8 @@ function buildGeneralDay(selection, phase, config) {
   // Yoga, Pilates and Mobility ARE the warm-up — no separate warm-up block
   const skipWarmup = ['yoga', 'pilates', 'mobility'].includes(selection);
 
-  const activeCategories = ['agility', 'mobility', 'yoga', 'pilates', 'hiit'];
-  const warmupPool = activeCategories.includes(selection) ? [...WARMUPS.active] : [...WARMUPS.general];
-  const warmupKey  = activeCategories.includes(selection) ? 'warmup:active' : 'warmup:general';
+  const warmupPool = [...WARMUPS];
+  const warmupKey  = 'warmup:general';
   const heading    = cat.name;
   const mainKey    = `general:${selection}:${exLevel}`;
 
@@ -358,7 +357,7 @@ function buildPTDay(selection, dayType, phase, config) {
     title: sectionTitle,
     phaseNote: phase.theme,
     sections: [
-      { heading: 'Warm-Up', items: pickRandom([...WARMUPS.general], 4), poolKey: 'warmup:general' },
+      { heading: 'Warm-Up', items: pickRandom([...WARMUPS], 4), poolKey: 'warmup:general' },
       { heading: sectionTitle, items: main, poolKey: `pt:${selection}:${exLevel}:${bucket}` },
     ],
   };
@@ -379,7 +378,7 @@ function buildFightDay(selection, dayType, phase, config) {
       : buildBagRounds(selection, phase);
     const bagMainKey = isGrappling ? `${selection}-drills:${exLevel}` : 'mt-combos';
     sections = [
-      { heading: 'Warm-Up', items: pickRandom([...MT_WARMUPS], 2), poolKey: 'warmup:mt' },
+      { heading: 'Warm-Up', items: pickRandom([...WARMUPS], 3), poolKey: 'warmup:general' },
       { heading: heading, items: rounds, poolKey: bagMainKey },
     ];
   } else if (dayType === 'strength') {
@@ -390,7 +389,7 @@ function buildFightDay(selection, dayType, phase, config) {
       note: ex.note,
     }));
     sections = [
-      { heading: 'Warm-Up', items: pickRandom([...WARMUPS.general], 3), poolKey: 'warmup:general' },
+      { heading: 'Warm-Up', items: pickRandom([...WARMUPS], 3), poolKey: 'warmup:general' },
       { heading: heading, items: exercises, poolKey: `fight:${selection}:weights:${exLevel}` },
     ];
   } else {
@@ -400,7 +399,7 @@ function buildFightDay(selection, dayType, phase, config) {
     const exercises = buildTechniqueRounds(selection, phase, hasPartner);
     const techKey = hasPartner ? `fight:${selection}:partner:${exLevel}` : 'mt-combos';
     sections = [
-      { heading: 'Warm-Up', items: pickRandom([...MT_WARMUPS], 2), poolKey: 'warmup:mt' },
+      { heading: 'Warm-Up', items: pickRandom([...WARMUPS], 3), poolKey: 'warmup:general' },
       { heading: heading, items: exercises, poolKey: techKey },
     ];
   }
