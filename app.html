@@ -439,21 +439,19 @@
       status.style.color = '#b89898';
       status.textContent = 'Sending...';
 
-      fetch('https://formspree.io/f/mvzeqlrp', {
+      const formData = new FormData();
+      formData.append('entry.373122342', text);
+
+      fetch('https://docs.google.com/forms/u/0/d/e/1FAIpQLSc5c8geXFg2wzVQPeEY4AahkThSOdk_xNQ6sNen_BgWq5zwMQ/formResponse', {
         method: 'POST',
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ feedback: text })
+        mode: 'no-cors',
+        body: formData
       })
-        .then(res => {
-          if (res.ok) {
-            status.style.color = '#4caf50';
-            status.textContent = 'Feedback received. Thank you.';
-            document.getElementById('feedback-text').value = '';
-            setTimeout(closeFeedback, 2200);
-          } else {
-            status.style.color = '#e63946';
-            status.textContent = 'Submission failed. Please try again.';
-          }
+        .then(() => {
+          status.style.color = '#4caf50';
+          status.textContent = 'Feedback received. Thank you.';
+          document.getElementById('feedback-text').value = '';
+          setTimeout(closeFeedback, 2200);
         })
         .catch(() => {
           status.style.color = '#e63946';
