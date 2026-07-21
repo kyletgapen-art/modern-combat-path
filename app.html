@@ -17,6 +17,7 @@
       <div class="header-actions">
         <button class="header-btn" onclick="render1RMScreen(); showScreen('1rm')" title="Baseline Numbers">1RM</button>
         <button class="header-btn" onclick="showTracker()" title="Workout Tracker">📅</button>
+        <button class="header-btn" onclick="document.getElementById('feedback-modal').style.display='flex'" title="Feedback" style="font-size:0.85rem; letter-spacing:0.05em; padding:6px 14px;">Feedback</button>
       </div>
     </div>
   </header>
@@ -384,6 +385,82 @@
       </div>
     </div>
   </div>
+
+  <!-- ─── FEEDBACK MODAL ─── -->
+  <div id="feedback-modal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.8); align-items:center; justify-content:center; padding:20px;">
+    <div style="background:#170808; border:1px solid rgba(230,57,70,0.3); max-width:560px; width:100%; position:relative;">
+
+      <!-- Header -->
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid rgba(230,57,70,0.15);">
+        <span style="font-family:'Courier New',monospace; font-size:0.7rem; letter-spacing:0.22em; text-transform:uppercase; color:#e63946;">// Feedback</span>
+        <button onclick="closeFeedback()" style="background:none; border:none; color:#b89898; font-size:1.3rem; cursor:pointer; line-height:1; padding:0 4px;">✕</button>
+      </div>
+
+      <!-- Body -->
+      <div style="padding:28px 22px 22px;">
+        <p style="font-size:1rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:#f5f0f0; margin-bottom:6px;">Any changes or additions you would like to see?</p>
+        <p style="font-family:'Courier New',monospace; font-size:0.68rem; color:#b89898; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:18px;">Your input shapes the platform.</p>
+        <textarea id="feedback-text"
+          placeholder="Type your feedback here..."
+          rows="6"
+          style="width:100%; background:#200d0d; border:1px solid #3a1515; color:#f5f0f0; font-size:0.92rem; line-height:1.6; padding:12px 14px; resize:vertical; font-family:inherit; outline:none;">
+        </textarea>
+
+        <!-- Status message -->
+        <div id="feedback-status" style="display:none; font-family:'Courier New',monospace; font-size:0.7rem; letter-spacing:0.12em; text-transform:uppercase; margin-top:12px;"></div>
+
+        <div style="display:flex; gap:10px; margin-top:16px; justify-content:flex-end;">
+          <button onclick="closeFeedback()" style="background:none; border:1px solid #3a1515; color:#b89898; padding:10px 22px; font-size:0.78rem; cursor:pointer; letter-spacing:0.08em; text-transform:uppercase;">Cancel</button>
+          <button onclick="submitFeedback()" style="background:#e63946; border:1px solid #e63946; color:#fff; padding:10px 28px; font-size:0.78rem; font-weight:700; cursor:pointer; letter-spacing:0.08em; text-transform:uppercase; transition:background 0.2s;">Submit</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function closeFeedback() {
+      document.getElementById('feedback-modal').style.display = 'none';
+      document.getElementById('feedback-text').value = '';
+      const s = document.getElementById('feedback-status');
+      s.style.display = 'none'; s.textContent = '';
+    }
+
+    function submitFeedback() {
+      const text = document.getElementById('feedback-text').value.trim();
+      const status = document.getElementById('feedback-status');
+      if (!text) {
+        status.style.display = 'block';
+        status.style.color = '#e63946';
+        status.textContent = 'Please enter your feedback before submitting.';
+        return;
+      }
+
+      status.style.display = 'block';
+      status.style.color = '#b89898';
+      status.textContent = 'Sending...';
+
+      fetch('https://formspree.io/f/mvzeqlrp', {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ feedback: text })
+      })
+        .then(res => {
+          if (res.ok) {
+            status.style.color = '#4caf50';
+            status.textContent = 'Feedback received. Thank you.';
+            document.getElementById('feedback-text').value = '';
+            setTimeout(closeFeedback, 2200);
+          } else {
+            status.style.color = '#e63946';
+            status.textContent = 'Submission failed. Please try again.';
+          }
+        })
+        .catch(() => {
+          status.style.color = '#e63946';
+          status.textContent = 'Submission failed. Please try again.';
+        });
+    }
+  </script>
 
   <script src="workouts.js"></script>
   <script src="plan.js"></script>
