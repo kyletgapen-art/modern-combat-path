@@ -101,7 +101,8 @@ function selectGeneral(key) {
   state.mode = 'general';
   state.selection = key;
   const cat = GENERAL_WORKOUTS[key];
-  document.getElementById('plan-options-title').textContent = cat ? cat.name : key;
+  const titleMap = { 'full-body': 'Full Body' };
+  document.getElementById('plan-options-title').textContent = cat ? cat.name : (titleMap[key] || key);
   document.getElementById('plan-options-back').setAttribute('onclick', "showScreen('general-select')");
   // General fitness has no partner option
   document.getElementById('single-partner-wrap').style.display = 'none';
