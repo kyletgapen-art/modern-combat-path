@@ -24,7 +24,7 @@
 
   <!-- HOME -->
   <div id="screen-home" class="screen active">
-    <div class="card-grid three-col">
+    <div class="card-grid">
       <div class="path-card" onclick="showScreen('pt-select')">
         <h2>PT Test Prep</h2>
         <p>Military and law enforcement fitness tests</p>
@@ -36,6 +36,10 @@
       <div class="path-card" onclick="showScreen('general-select')">
         <h2>General Fitness</h2>
         <p>Targeted workouts for every fitness goal</p>
+      </div>
+      <div class="path-card" onclick="render1RMScreen(); showScreen('1rm')">
+        <h2>1 Rep Max</h2>
+        <p>1 rep max calculator</p>
       </div>
     </div>
   </div>
@@ -78,17 +82,15 @@
       <h2>Select Your Focus</h2>
     </div>
     <div class="option-grid">
-      <div class="option-card" onclick="selectGeneral('cardio')"><strong>Cardio</strong><span>Endurance & aerobic base</span></div>
-      <div class="option-card" onclick="selectGeneral('upper-body')"><strong>Upper Body</strong><span>Push, pull, press</span></div>
-      <div class="option-card" onclick="selectGeneral('lower-body')"><strong>Lower Body</strong><span>Squat, hinge, lunge</span></div>
+      <div class="option-card" onclick="selectGeneral('squat')"><strong>Squat</strong><span>Squat patterns & variations</span></div>
+      <div class="option-card" onclick="selectGeneral('hinge')"><strong>Hip Hinge</strong><span>Deadlifts, swings & hinges</span></div>
+      <div class="option-card" onclick="selectGeneral('push')"><strong>Push</strong><span>Chest, shoulders & triceps</span></div>
+      <div class="option-card" onclick="selectGeneral('pull')"><strong>Pull</strong><span>Back & biceps</span></div>
+      <div class="option-card" onclick="selectGeneral('carry')"><strong>Loaded Carry</strong><span>Farmer carries & loaded walks</span></div>
       <div class="option-card" onclick="selectGeneral('core')"><strong>Core</strong><span>Stability & strength</span></div>
-      <div class="option-card" onclick="selectGeneral('hiit')"><strong>HIIT</strong><span>High intensity conditioning</span></div>
-      <div class="option-card" onclick="selectGeneral('hyrox')"><strong>HYROX</strong><span>Race prep & simulation</span></div>
-      <div class="option-card" onclick="selectGeneral('crossfit')"><strong>CrossFit-Style</strong><span>WODs & functional fitness</span></div>
-      <div class="option-card" onclick="selectGeneral('yoga')"><strong>Yoga</strong><span>Flow, strength & flexibility</span></div>
-      <div class="option-card" onclick="selectGeneral('pilates')"><strong>Pilates</strong><span>Core control & body awareness</span></div>
-      <div class="option-card" onclick="selectGeneral('agility')"><strong>Agility</strong><span>Plyometrics & explosive power</span></div>
-      <div class="option-card" onclick="selectGeneral('mobility')"><strong>Mobility</strong><span>Joint range & movement quality</span></div>
+      <div class="option-card" onclick="selectGeneral('conditioning')"><strong>Conditioning</strong><span style="font-size:0.72rem;opacity:0.75;">HIIT · CrossFit · HYROX</span></div>
+      <div class="option-card" onclick="selectGeneral('track-day')"><strong>Track Day</strong><span style="font-size:0.72rem;opacity:0.75;">Cardio · Plyometrics · Mobility</span></div>
+      <div class="option-card" onclick="selectGeneral('flow-state')"><strong>Flow State</strong><span style="font-size:0.72rem;opacity:0.75;">Yoga · Pilates</span></div>
     </div>
   </div>
 
@@ -129,28 +131,29 @@
         </div>
       </div>
       <div class="form-group">
-        <label>Time Available</label>
-        <div class="btn-group">
-          <button type="button" class="toggle-btn" data-group="time" data-value="30">30 min</button>
-          <button type="button" class="toggle-btn active" data-group="time" data-value="45">45 min</button>
-          <button type="button" class="toggle-btn" data-group="time" data-value="60">60 min</button>
-          <button type="button" class="toggle-btn" data-group="time" data-value="90">90 min</button>
-        </div>
-      </div>
-      <div class="form-group">
         <label>Equipment</label>
         <div class="btn-group">
-          <button type="button" class="toggle-btn" data-group="equip" data-value="none">None</button>
-          <button type="button" class="toggle-btn active" data-group="equip" data-value="basic">Basic Gym</button>
+          <button type="button" class="toggle-btn active" data-group="equip" data-value="bodyweight">Bodyweight</button>
+          <button type="button" class="toggle-btn" data-group="equip" data-value="garage">Garage Gym</button>
           <button type="button" class="toggle-btn" data-group="equip" data-value="full">Full Gym</button>
-          <button type="button" class="toggle-btn" data-group="equip" data-value="bags">Bags & Pads</button>
+        </div>
+        <div id="single-garage-info" style="display:none; margin-top:8px; font-size:0.8rem; color:var(--muted);">
+          <span id="single-garage-summary">No equipment selected</span>
+          <button type="button" onclick="openGarageModal('single')" style="background:none; border:none; color:var(--accent); cursor:pointer; font-size:0.8rem; margin-left:8px; text-decoration:underline;">Edit Equipment</button>
         </div>
       </div>
-      <div class="form-group" id="single-partner-wrap">
+      <div class="form-group" id="single-partner-wrap" style="display:none;">
         <label>Training Partner?</label>
         <div class="btn-group">
           <button type="button" class="toggle-btn active" data-group="partner" data-value="no">Solo</button>
           <button type="button" class="toggle-btn" data-group="partner" data-value="yes">With Partner</button>
+        </div>
+      </div>
+      <div class="form-group" id="single-bags-wrap" style="display:none;">
+        <label>Bags & Pads?</label>
+        <div class="btn-group">
+          <button type="button" class="toggle-btn active" data-group="hasBags" data-value="no">No Bags</button>
+          <button type="button" class="toggle-btn" data-group="hasBags" data-value="yes">Bags & Pads</button>
         </div>
       </div>
       <button type="button" class="generate-btn" onclick="generateSingleWorkout()">Generate Workout →</button>
@@ -200,15 +203,6 @@
         </div>
       </div>
       <div class="form-group">
-        <label>Session Length</label>
-        <div class="btn-group">
-          <button type="button" class="toggle-btn" data-group="planTime" data-value="30">30 min</button>
-          <button type="button" class="toggle-btn active" data-group="planTime" data-value="45">45 min</button>
-          <button type="button" class="toggle-btn" data-group="planTime" data-value="60">60 min</button>
-          <button type="button" class="toggle-btn" data-group="planTime" data-value="90">90 min</button>
-        </div>
-      </div>
-      <div class="form-group">
         <label>Fitness Level</label>
         <div class="btn-group">
           <button type="button" class="toggle-btn active" data-group="planLevel" data-value="easy">Easy</button>
@@ -220,17 +214,27 @@
       <div class="form-group">
         <label>Equipment</label>
         <div class="btn-group">
-          <button type="button" class="toggle-btn" data-group="planEquip" data-value="none">None</button>
-          <button type="button" class="toggle-btn active" data-group="planEquip" data-value="basic">Basic Gym</button>
+          <button type="button" class="toggle-btn active" data-group="planEquip" data-value="bodyweight">Bodyweight</button>
+          <button type="button" class="toggle-btn" data-group="planEquip" data-value="garage">Garage Gym</button>
           <button type="button" class="toggle-btn" data-group="planEquip" data-value="full">Full Gym</button>
-          <button type="button" class="toggle-btn" data-group="planEquip" data-value="bags">Bags & Pads</button>
+        </div>
+        <div id="plan-garage-info" style="display:none; margin-top:8px; font-size:0.8rem; color:var(--muted);">
+          <span id="plan-garage-summary">No equipment selected</span>
+          <button type="button" onclick="openGarageModal('plan')" style="background:none; border:none; color:var(--accent); cursor:pointer; font-size:0.8rem; margin-left:8px; text-decoration:underline;">Edit Equipment</button>
         </div>
       </div>
-      <div class="form-group" id="plan-partner-wrap">
+      <div class="form-group" id="plan-partner-wrap" style="display:none;">
         <label>Training Partner?</label>
         <div class="btn-group">
           <button type="button" class="toggle-btn active" data-group="planPartner" data-value="no">Solo</button>
           <button type="button" class="toggle-btn" data-group="planPartner" data-value="yes">With Partner</button>
+        </div>
+      </div>
+      <div class="form-group" id="plan-bags-wrap" style="display:none;">
+        <label>Bags & Pads?</label>
+        <div class="btn-group">
+          <button type="button" class="toggle-btn active" data-group="planHasBags" data-value="no">No Bags</button>
+          <button type="button" class="toggle-btn" data-group="planHasBags" data-value="yes">Bags & Pads</button>
         </div>
       </div>
       <button type="button" class="generate-btn" onclick="buildPlan()">Generate My Plan →</button>
@@ -288,10 +292,10 @@
     <div class="orm-grid" id="orm-grid">
       <!-- rendered by 1rm.js -->
     </div>
-    <div style="margin-top:28px; display:flex; gap:12px; flex-wrap:wrap;">
+    <div id="orm-save-btns" style="margin-top:28px; display:flex; gap:12px; flex-wrap:wrap;">
       <button class="generate-btn" onclick="saveAndContinue1RM()">Save & Continue →</button>
-      <button class="action-btn" onclick="skip1RM()">Skip for now</button>
     </div>
+    <div id="orm-pct-section" style="display:none; margin-top:8px;"></div>
   </div>
 
   <!-- ── WORKOUT TRACKER ── -->
@@ -459,6 +463,33 @@
         });
     }
   </script>
+
+  <!-- ─── GARAGE GYM MODAL ─── -->
+  <div id="garage-modal" style="display:none; position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,0.85); align-items:center; justify-content:center; padding:20px;">
+    <div style="background:#170808; border:1px solid rgba(230,57,70,0.3); max-width:480px; width:100%;">
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid rgba(230,57,70,0.15);">
+        <span style="font-family:'Courier New',monospace; font-size:0.7rem; letter-spacing:0.22em; text-transform:uppercase; color:#e63946;">// Garage Gym Equipment</span>
+        <button onclick="closeGarageModal()" style="background:none; border:none; color:#b89898; font-size:1.3rem; cursor:pointer; padding:0 4px;">✕</button>
+      </div>
+      <div style="padding:22px;">
+        <p style="font-family:'Courier New',monospace; font-size:0.7rem; color:#b89898; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:18px;">Select the equipment you have access to:</p>
+        <div class="garage-equip-grid">
+          <label class="garage-equip-item"><input type="checkbox" value="db" id="ge-db"> <span>Dumbbells</span></label>
+          <label class="garage-equip-item"><input type="checkbox" value="kb" id="ge-kb"> <span>Kettlebells</span></label>
+          <label class="garage-equip-item"><input type="checkbox" value="bb" id="ge-bb"> <span>Barbell + Plates</span></label>
+          <label class="garage-equip-item"><input type="checkbox" value="rack" id="ge-rack"> <span>Squat Rack</span></label>
+          <label class="garage-equip-item"><input type="checkbox" value="pullbar" id="ge-pullbar"> <span>Pull-up Bar</span></label>
+          <label class="garage-equip-item"><input type="checkbox" value="band" id="ge-band"> <span>Resistance Bands</span></label>
+          <label class="garage-equip-item"><input type="checkbox" value="landmine" id="ge-landmine"> <span>Landmine</span></label>
+          <label class="garage-equip-item"><input type="checkbox" value="sandbag" id="ge-sandbag"> <span>Sandbags</span></label>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:20px; justify-content:flex-end;">
+          <button onclick="closeGarageModal()" style="background:none; border:1px solid #3a1515; color:#b89898; padding:10px 22px; font-size:0.78rem; cursor:pointer; letter-spacing:0.08em; text-transform:uppercase;">Cancel</button>
+          <button onclick="saveGarageEquip()" style="background:#e63946; border:1px solid #e63946; color:#fff; padding:10px 28px; font-size:0.78rem; font-weight:700; cursor:pointer; letter-spacing:0.08em; text-transform:uppercase;">Save →</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="workouts.js"></script>
   <script src="plan.js"></script>

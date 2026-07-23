@@ -574,6 +574,42 @@ header {
 .orm-use-btn { background:var(--accent); border:none; color:#000; padding:4px 10px; border-radius:5px; cursor:pointer; font-size:0.78rem; font-weight:700; }
 .orm-formula-note { font-size:0.7rem; color:var(--muted); margin-top:4px; }
 
+/* ── Garage Gym Modal ── */
+.garage-equip-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.garage-equip-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  font-size: 0.88rem;
+  color: var(--text);
+}
+.garage-equip-item:hover { border-color: var(--accent); }
+.garage-equip-item input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; }
+.garage-equip-item span { user-select: none; }
+
+/* ── 1RM Percentage Table ── */
+.pct-table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
+.pct-table-title { font-size:1rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px; }
+.pct-table-sub { font-size:0.82rem; color:var(--muted); margin-bottom:16px; line-height:1.5; }
+.pct-scroll { overflow-x:auto; }
+.pct-table { width:100%; border-collapse:collapse; font-size:0.88rem; }
+.pct-table th { text-align:center; padding:8px 12px; font-family:'Courier New',monospace; font-size:0.7rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--accent); border-bottom:1px solid var(--border); white-space:nowrap; }
+.pct-table th:first-child { text-align:left; }
+.pct-table td { text-align:center; padding:10px 12px; border-bottom:1px solid var(--border); color:var(--text); }
+.pct-table td:first-child { text-align:left; }
+.pct-table tbody tr:last-child td { border-bottom:none; }
+.pct-table tbody tr:hover td { background:var(--surface2); }
+.pct-lift-name { font-weight:700; white-space:nowrap; }
+.pct-max { color:var(--accent); font-weight:700; white-space:nowrap; }
+
 /* ── Timer Widget ── */
 .timer-widget { position:fixed; bottom:24px; right:24px; z-index:100; }
 .timer-fab {

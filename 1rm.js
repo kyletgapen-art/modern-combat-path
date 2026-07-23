@@ -205,7 +205,116 @@ function saveAndContinue1RM() {
   saveProfileData(profile);
 
   localStorage.setItem('mc_1rm_done', '1');
-  showScreen('home');
+  renderPercentageTable(saved);
+}
+
+function renderPercentageTable(saved) {
+  const PERCENTS = [75, 80, 85, 90, 95];
+  const lifts = ORM_LIFTS.filter(l => saved[l.key]);
+
+  let html = '';
+
+  if (lifts.length) {
+    html += `
+      <div class="pct-table-wrap">
+        <div class="pct-table-title">Your Working Weights</div>
+        <p class="pct-table-sub">Reference these before your workout. Screenshot or write them down.</p>
+        <div class="pct-scroll">
+          <table class="pct-table">
+            <thead>
+              <tr>
+                <th>Lift</th>
+                <th>1RM</th>
+                ${PERCENTS.map(p => `<th>${p}%</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody>
+              ${lifts.map(l => {
+                const max = saved[l.key].max;
+                return `<tr>
+                  <td class="pct-lift-name">${l.label}</td>
+                  <td class="pct-max">${max} ${l.unit}</td>
+                  ${PERCENTS.map(p => `<td>${Math.round(max * p / 100)} lbs</td>`).join('')}
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+  }
+
+  if (saved.mile) {
+    const mileSec = saved.mile.min * 60 + (saved.mile.sec || 0);
+
+    // Riegel formula: T2 = T1 * (D2 / D1)^1.06
+    // D1 = 1609m (1 mile), times in seconds
+    function riegelTime(meters) {
+      return Math.round(mileSec * Math.pow(meters / 1609, 1.06));
+    }
+
+    function fmtTime(sec) {
+      if (sec < 3600) {
+        const m = Math.floor(sec / 60);
+        const s = String(sec % 60).padStart(2, '0');
+        return `${m}:${s}`;
+      }
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      const s = String(sec % 60).padStart(2, '0');
+      return `${h}:${String(m).padStart(2,'0')}:${s}`;
+    }
+
+    const distances = [
+      { label: '400m',    meters: 400 },
+      { label: '800m',    meters: 800 },
+      { label: '1200m',   meters: 1200 },
+      { label: '1 Mile',  meters: 1609 },
+      { label: '3200m',   meters: 3200 },
+      { label: '5K',      meters: 5000 },
+      { label: '2 Miles', meters: 3218 },
+      { label: '3 Miles', meters: 4828 },
+      { label: '4 Miles', meters: 6437 },
+      { label: '5 Miles', meters: 8047 },
+    ].sort((a, b) => a.meters - b.meters);
+
+    html += `
+      <div class="pct-table-wrap" style="margin-top:20px;">
+        <div class="pct-table-title">Run Distance Reference</div>
+        <p class="pct-table-sub">Estimated finish times based on your ${saved.mile.min}:${String(saved.mile.sec || 0).padStart(2,'0')} mile. Calculated using the Riegel formula — shorter distances will feel fast, longer ones will feel hard.</p>
+        <div class="pct-scroll">
+          <table class="pct-table">
+            <thead>
+              <tr><th>Distance</th><th>Est. Time</th><th>Pace / Mile</th></tr>
+            </thead>
+            <tbody>
+              ${distances.map(d => {
+                const totalSec = riegelTime(d.meters);
+                const pacePerMileSec = Math.round(totalSec / (d.meters / 1609));
+                return `<tr>
+                  <td class="pct-lift-name">${d.label}</td>
+                  <td>${fmtTime(totalSec)}</td>
+                  <td>${fmtTime(pacePerMileSec)} /mi</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+  }
+
+  const container = document.getElementById('orm-pct-section');
+  if (container) {
+    container.innerHTML = html + `
+      <div style="margin-top:24px; display:flex; gap:12px; flex-wrap:wrap;">
+        <button class="generate-btn" onclick="showScreen('home')">Continue to App →</button>
+        <button class="action-btn" onclick="render1RMScreen(); document.getElementById('orm-pct-section').innerHTML=''">Edit Numbers</button>
+      </div>`;
+    container.style.display = 'block';
+  }
+
+  document.getElementById('orm-grid').style.display = 'none';
+  document.getElementById('orm-save-btns').style.display = 'none';
+  window.scrollTo(0, 0);
 }
 
 function skip1RM() {

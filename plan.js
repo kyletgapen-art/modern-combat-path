@@ -197,6 +197,7 @@ function generatePlan(config) {
     title: getPlanTitle(mode, selection),
     mode, selection, daysPerWeek, totalWeeks,
     equip: config.equip,
+    garageEquip: config.garageEquip || [],
     partner: config.partner,
     weeks: [],
   };
@@ -262,46 +263,136 @@ function buildDayWorkout(mode, selection, dayType, phase, config) {
   return buildFightDay(selection, dayType, phase, config);
 }
 
+function filterByEquip(pool, equip, garageEquip) {
+  if (!equip || equip === 'full') return pool;
+  if (equip === 'bodyweight') return pool.filter(ex => !ex.equip || ex.equip === 'bw');
+  const allowed = new Set(['bw', ...(garageEquip || [])]);
+  if (allowed.has('rack')) allowed.add('bb');
+  return pool.filter(ex => !ex.equip || allowed.has(ex.equip));
+}
+
+function getWarmupPool(selection) {
+  if (['push', 'pull'].includes(selection)) return WARMUPS_UPPER;
+  if (['squat', 'hinge', 'carry'].includes(selection)) return WARMUPS_LOWER;
+  if (selection === 'core') return WARMUPS_CORE;
+  if (selection === 'conditioning') return WARMUPS_CONDITIONING;
+  if (selection === 'track-day') return WARMUPS_TRACK;
+  return WARMUPS_LOWER;
+}
+
+const STRENGTH_CATS = ['squat', 'hinge', 'push', 'pull', 'core'];
+
+function scalePrescription(ex, level, selection) {
+  const rx = (ex.prescription || '').toLowerCase();
+
+  // Flow State — yoga/pilates prescriptions are kept exactly as written
+  if (selection === 'flow-state') return ex.prescription;
+
+  // Strength categories: override sets × reps based on difficulty
+  if (STRENGTH_CATS.includes(selection)) {
+    // Hold-based exercises (planks, wall sits, L-sits, etc.)
+    if (/\bsec\b|\bhold\b/.test(rx) && !/\d\s*×\s*\d+\s*rep/.test(rx)) {
+      const holdMap = {
+        easy:           '3 × 20 sec hold',
+        average:        '3 × 30 sec hold',
+        difficult:      '4 × 45 sec hold',
+        'very-difficult': '4 × 60 sec hold',
+      };
+      return holdMap[level] || '3 × 30 sec hold';
+    }
+    const repsMap = {
+      easy:           '3 × 8–10 reps',
+      average:        '4 × 10–15 reps',
+      difficult:      '5 × 12–18 reps',
+      'very-difficult': '6 × 15–25 reps',
+    };
+    return repsMap[level] || '3 × 10 reps';
+  }
+
+  // Carry — scale sets, keep distance from original prescription
+  if (selection === 'carry') {
+    const distMatch = rx.match(/(\d+)\s*m\b/);
+    const dist = distMatch ? distMatch[1] : '30';
+    const setsMap = { easy: 3, average: 4, difficult: 5, 'very-difficult': 6 };
+    return `${setsMap[level] || 3} × ${dist}m`;
+  }
+
+  // Conditioning (HIIT/CrossFit/HYROX) — scale time-based blocks
+  if (selection === 'conditioning') {
+    return scaleConditioningRx(ex.prescription, level);
+  }
+
+  // Track Day — scale cardio from 1RM mile time; plyometrics scale reps
+  if (selection === 'track-day') {
+    return scaleTrackRx(ex, level);
+  }
+
+  return ex.prescription;
+}
+
+function scaleConditioningRx(prescription, level) {
+  if (!prescription) return prescription;
+  let rx = prescription;
+  const scale = { easy: 0.75, average: 1.0, difficult: 1.3, 'very-difficult': 1.7 }[level] || 1.0;
+  const addRounds = { easy: -1, average: 0, difficult: 1, 'very-difficult': 2 }[level] ?? 0;
+  rx = rx.replace(/(\d+)\s*min\s*(amrap|emom)/gi, (m, mins, word) =>
+    `${Math.max(5, Math.round(parseInt(mins) * scale))} min ${word.toUpperCase()}`);
+  rx = rx.replace(/(\d+)\s*rounds?/gi, (m, n) =>
+    `${Math.max(1, parseInt(n) + addRounds)} rounds`);
+  return rx;
+}
+
+function scaleTrackRx(ex, level) {
+  const rx = (ex.prescription || '').toLowerCase();
+  // If it contains a run distance, try to compute pace from saved 1RM mile time
+  const distMatch = rx.match(/(\d+)\s*m\b/);
+  if (distMatch) {
+    try {
+      const saved = JSON.parse(localStorage.getItem('mc_1rm') || '{}');
+      if (saved.mile) {
+        const mileSec = (saved.mile.min || 0) * 60 + (saved.mile.sec || 0);
+        if (mileSec > 0) {
+          const meters = parseInt(distMatch[1]);
+          const lapSec = Math.round(mileSec * Math.pow(meters / 1609.34, 1.06));
+          const mins = Math.floor(lapSec / 60);
+          const secs = String(lapSec % 60).padStart(2, '0');
+          const repMap = { easy: 3, average: 4, difficult: 6, 'very-difficult': 8 }[level] || 4;
+          return `${repMap} × ${distMatch[1]}m — target: ${mins}:${secs}`;
+        }
+      }
+    } catch (e) {}
+  }
+  // Fallback: scale rounds/reps generically
+  return scaleConditioningRx(ex.prescription, level);
+}
+
 function buildGeneralDay(selection, phase, config) {
-  const cat = GENERAL_WORKOUTS[selection] || FIGHT_WORKOUTS[selection];
+  const cat = GENERAL_WORKOUTS[selection];
   if (!cat) return null;
   const exLevel = resolveExerciseLevel(phase.exerciseLevel);
-  const pool = cat[exLevel] || cat.beginner;
-  const time = parseInt(config.time) || 45;
+  const level = config.level || 'easy';
 
-  // Exercise counts tuned so total work fills the chosen time.
-  // Yoga/Pilates: ~2-3 min per pose/exercise (both sides + breath)
-  // Strength/Core: ~4-5 min per exercise (sets + rest)
-  // Agility/Plyometrics: ~4-5 min per exercise (sets + rest)
-  // Mobility: ~3-4 min per position
-  // HIIT/CrossFit/HYROX/Cardio: exercises are already long timed blocks
-  const countMap = {
-    yoga:          { 30: 9,  45: 13, 60: 17, 90: 24 },
-    pilates:       { 30: 10, 45: 15, 60: 20, 90: 28 },
-    mobility:      { 30: 8,  45: 11, 60: 14, 90: 20 },
-    agility:       { 30: 6,  45: 9,  60: 12, 90: 16 },
-    'upper-body':  { 30: 6,  45: 8,  60: 10, 90: 14 },
-    'lower-body':  { 30: 6,  45: 8,  60: 10, 90: 14 },
-    core:          { 30: 6,  45: 8,  60: 10, 90: 14 },
-    hiit:          { 30: 3,  45: 4,  60: 5,  90: 6  },
-    cardio:        { 30: 2,  45: 3,  60: 4,  90: 5  },
-    crossfit:      { 30: 2,  45: 3,  60: 4,  90: 5  },
-    hyrox:         { 30: 2,  45: 3,  60: 4,  90: 5  },
-  };
-  const counts = countMap[selection] || { 30: 4, 45: 6, 60: 8, 90: 12 };
-  const count = counts[time] || counts[45];
+  // All difficulty levels combined — difficulty only affects sets/reps, not exercise selection
+  const allExercises = [
+    ...(cat.beginner     || []),
+    ...(cat.intermediate || []),
+    ...(cat.advanced     || []),
+  ];
+  const filtered = filterByEquip(allExercises, config.equip, config.garageEquip);
+  const pool = filtered.length >= 3 ? filtered : allExercises.filter(ex => !ex.equip || ex.equip === 'bw');
 
-  const exercises = pickRandom([...pool], Math.min(count, pool.length));
+  // Always 4 main exercises with difficulty-scaled prescriptions
+  const rawExercises = pickRandom([...pool], Math.min(4, pool.length));
+  const exercises = rawExercises.map(ex => ({
+    ...ex,
+    prescription: scalePrescription(ex, level, selection),
+  }));
 
-  // Yoga, Pilates and Mobility ARE the warm-up — no separate warm-up block
-  const skipWarmup = ['yoga', 'pilates', 'mobility'].includes(selection);
+  const heading = cat.name;
+  const mainKey = `general:${selection}:${exLevel}`;
 
-  const warmupPool = [...WARMUPS];
-  const warmupKey  = 'warmup:general';
-  const heading    = cat.name;
-  const mainKey    = `general:${selection}:${exLevel}`;
-
-  if (skipWarmup) {
+  // Flow State is its own warm-up — no separate block
+  if (selection === 'flow-state') {
     return {
       title: heading,
       phaseNote: phase.theme,
@@ -311,11 +402,12 @@ function buildGeneralDay(selection, phase, config) {
     };
   }
 
+  const warmupPool = getWarmupPool(selection);
   return {
     title: heading,
     phaseNote: phase.theme,
     sections: [
-      { heading: 'Warm-Up', items: pickRandom(warmupPool, 2), poolKey: warmupKey },
+      { heading: 'Warm-Up', items: pickRandom([...warmupPool], 2), poolKey: `warmup:${selection}` },
       { heading: heading, items: exercises, poolKey: mainKey },
     ],
   };
@@ -325,8 +417,9 @@ function buildPTDay(selection, dayType, phase, config) {
   const test = PT_WORKOUTS[selection];
   if (!test) return null;
   const exLevel = resolveExerciseLevel(phase.exerciseLevel);
-  const bucket = [30,45,60,90].reduce((p,c) =>
-    Math.abs(c - parseInt(config.time)) < Math.abs(p - parseInt(config.time)) ? c : p);
+  // Map difficulty to PT volume bucket instead of session time
+  const bucketMap = { easy: 30, average: 45, difficult: 60, 'very-difficult': 90 };
+  const bucket = bucketMap[config.level] || 45;
   const all = (test[exLevel] && test[exLevel][bucket]) ? [...test[exLevel][bucket]] : [];
 
   let main = [], heading = '';
@@ -344,10 +437,15 @@ function buildPTDay(selection, dayType, phase, config) {
   }
 
   if (!main.length) main = all.slice(0, 5);
-  main = main.map(ex => ({
-    ...ex,
-    note: ex.note,
-  }));
+  const level = config.level || 'easy';
+  main = main.map(ex => {
+    const rx = (ex.prescription || '').toLowerCase();
+    const isCardio = /(run|sprint|mile|km|intervals?|row)/.test(rx);
+    return {
+      ...ex,
+      prescription: isCardio ? ex.prescription : scalePrescription(ex, level, 'squat'),
+    };
+  });
 
   const sectionTitle = heading === 'Full Simulation'
     ? 'Full Simulation — ' + test.name
@@ -357,10 +455,14 @@ function buildPTDay(selection, dayType, phase, config) {
     title: sectionTitle,
     phaseNote: phase.theme,
     sections: [
-      { heading: 'Warm-Up', items: pickRandom([...WARMUPS], 4), poolKey: 'warmup:general' },
+      { heading: 'Warm-Up', items: pickRandom([...WARMUPS_CONDITIONING], 2), poolKey: 'warmup:pt' },
       { heading: sectionTitle, items: main, poolKey: `pt:${selection}:${exLevel}:${bucket}` },
     ],
   };
+}
+
+function getFightRoundDuration(level) {
+  return { easy: 2, average: 3, difficult: 4, 'very-difficult': 5 }[level] || 3;
 }
 
 function buildFightDay(selection, dayType, phase, config) {
@@ -369,37 +471,40 @@ function buildFightDay(selection, dayType, phase, config) {
   const exLevel = resolveExerciseLevel(phase.exerciseLevel);
   const hasPartner = config.partner === 'yes';
   const isGrappling = (selection === 'bjj' || selection === 'judo');
+  const level = config.level || 'easy';
+  // Override phase round duration with difficulty-based duration
+  const phaseWithDuration = { ...phase, roundDuration: getFightRoundDuration(level) };
   let sections = [], heading = '';
 
   if (dayType === 'bag') {
     heading = isGrappling ? 'Drilling — ' + fight.name : 'Bag Work — ' + fight.name;
     const rounds = isGrappling
-      ? buildDrillingRounds(selection, phase)
-      : buildBagRounds(selection, phase);
+      ? buildDrillingRounds(selection, phaseWithDuration)
+      : buildBagRounds(selection, phaseWithDuration);
     const bagMainKey = isGrappling ? `${selection}-drills:${exLevel}` : 'mt-combos';
     sections = [
-      { heading: 'Warm-Up', items: pickRandom([...WARMUPS], 3), poolKey: 'warmup:general' },
+      { heading: 'Warm-Up', items: pickRandom([...WARMUPS_FIGHT], 3), poolKey: 'warmup:fight' },
       { heading: heading, items: rounds, poolKey: bagMainKey },
     ];
   } else if (dayType === 'strength') {
     heading = 'Strength & Conditioning — ' + fight.name;
     const pool = fight.weights[exLevel] || fight.weights.beginner;
-    const exercises = pickRandom([...pool], Math.min(6, pool.length)).map(ex => ({
+    const exercises = pickRandom([...pool], Math.min(4, pool.length)).map(ex => ({
       ...ex,
-      note: ex.note,
+      prescription: scalePrescription(ex, level, 'squat'),
     }));
     sections = [
-      { heading: 'Warm-Up', items: pickRandom([...WARMUPS], 3), poolKey: 'warmup:general' },
+      { heading: 'Warm-Up', items: pickRandom([...WARMUPS_FIGHT], 3), poolKey: 'warmup:fight' },
       { heading: heading, items: exercises, poolKey: `fight:${selection}:weights:${exLevel}` },
     ];
   } else {
     heading = hasPartner
       ? 'Partner Work — ' + fight.name
       : 'Shadowboxing & Technique — ' + fight.name;
-    const exercises = buildTechniqueRounds(selection, phase, hasPartner);
+    const exercises = buildTechniqueRounds(selection, phaseWithDuration, hasPartner);
     const techKey = hasPartner ? `fight:${selection}:partner:${exLevel}` : 'mt-combos';
     sections = [
-      { heading: 'Warm-Up', items: pickRandom([...WARMUPS], 3), poolKey: 'warmup:general' },
+      { heading: 'Warm-Up', items: pickRandom([...WARMUPS_FIGHT], 3), poolKey: 'warmup:fight' },
       { heading: heading, items: exercises, poolKey: techKey },
     ];
   }

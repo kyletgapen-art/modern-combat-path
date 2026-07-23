@@ -4,23 +4,60 @@
 
 // ── State ──────────────────────────────────────
 const state = {
-  mode: null,        // 'pt' | 'fight'
-  selection: null,   // test key or fight key
+  mode: null,        // 'pt' | 'fight' | 'general'
+  selection: null,
   // Single workout
-  level:   'easy',
-  time:    '45',
-  equip:   'basic',
-  partner: 'no',
+  level:    'easy',
+  time:     '45',
+  equip:    'bodyweight',
+  partner:  'no',
+  hasBags:  'no',
   // Plan builder
-  planWeeks:   '4',
-  planDays:    '3',
-  planTime:    '45',
-  planLevel:   'easy',
-  planEquip:   'basic',
-  planPartner: 'no',
+  planWeeks:    '4',
+  planDays:     '3',
+  planTime:     '45',
+  planLevel:    'easy',
+  planEquip:    'bodyweight',
+  planPartner:  'no',
+  planHasBags:  'no',
   // Custom PT test
   customEvents: [],
 };
+
+// Garage equipment list — loaded from localStorage, shared between single/plan
+let garageEquip = JSON.parse(localStorage.getItem('mc_garage_equip') || '[]');
+
+function getGarageSummary() {
+  if (!garageEquip.length) return 'No equipment selected';
+  const labels = { db: 'Dumbbells', kb: 'Kettlebells', bb: 'Barbell', rack: 'Squat Rack', pullbar: 'Pull-up Bar', band: 'Bands', landmine: 'Landmine', sandbag: 'Sandbags' };
+  return garageEquip.map(e => labels[e] || e).join(', ');
+}
+
+function updateGarageInfo() {
+  const summary = getGarageSummary();
+  const s1 = document.getElementById('single-garage-summary');
+  const s2 = document.getElementById('plan-garage-summary');
+  if (s1) s1.textContent = summary;
+  if (s2) s2.textContent = summary;
+}
+
+function openGarageModal() {
+  document.querySelectorAll('#garage-modal input[type="checkbox"]').forEach(cb => {
+    cb.checked = garageEquip.includes(cb.value);
+  });
+  document.getElementById('garage-modal').style.display = 'flex';
+}
+
+function closeGarageModal() {
+  document.getElementById('garage-modal').style.display = 'none';
+}
+
+function saveGarageEquip() {
+  garageEquip = [...document.querySelectorAll('#garage-modal input[type="checkbox"]:checked')].map(cb => cb.value);
+  localStorage.setItem('mc_garage_equip', JSON.stringify(garageEquip));
+  updateGarageInfo();
+  closeGarageModal();
+}
 
 let currentPlan = null;
 
@@ -40,9 +77,10 @@ function selectTest(key) {
   const test = PT_WORKOUTS[key];
   document.getElementById('plan-options-title').textContent = test ? test.name : key;
   document.getElementById('plan-options-back').setAttribute('onclick', "showScreen('pt-select')");
-  // Hide partner option for PT tests
   document.getElementById('single-partner-wrap').style.display = 'none';
   document.getElementById('plan-partner-wrap').style.display = 'none';
+  document.getElementById('single-bags-wrap').style.display = 'none';
+  document.getElementById('plan-bags-wrap').style.display = 'none';
   showScreen('plan-options');
 }
 
@@ -54,6 +92,8 @@ function selectFight(key) {
   document.getElementById('plan-options-back').setAttribute('onclick', "showScreen('fight-select')");
   document.getElementById('single-partner-wrap').style.display = '';
   document.getElementById('plan-partner-wrap').style.display = '';
+  document.getElementById('single-bags-wrap').style.display = '';
+  document.getElementById('plan-bags-wrap').style.display = '';
   showScreen('plan-options');
 }
 
@@ -92,6 +132,18 @@ document.addEventListener('click', function(e) {
   document.querySelectorAll(`.toggle-btn[data-group="${group}"]`).forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   if (group in state) state[group] = value;
+
+  // Show garage info row when garage is selected, open modal
+  if (group === 'equip') {
+    const info = document.getElementById('single-garage-info');
+    if (info) info.style.display = value === 'garage' ? 'block' : 'none';
+    if (value === 'garage') { updateGarageInfo(); openGarageModal(); }
+  }
+  if (group === 'planEquip') {
+    const info = document.getElementById('plan-garage-info');
+    if (info) info.style.display = value === 'garage' ? 'block' : 'none';
+    if (value === 'garage') { updateGarageInfo(); openGarageModal(); }
+  }
 });
 
 // ── Single Workout Generator ───────────────────
@@ -105,7 +157,8 @@ function generateSingleWorkout() {
 
   const config = {
     mode: state.mode, selection: state.selection,
-    time: state.time, equip: state.equip, partner: state.partner,
+    level: state.level, equip: state.equip, partner: state.partner,
+    garageEquip,
   };
 
   let workout;
@@ -114,7 +167,7 @@ function generateSingleWorkout() {
   } else if (state.mode === 'general') {
     workout = buildGeneralDay(state.selection, phase, config);
   } else {
-    const dayType = (state.equip === 'bags' || state.equip === 'full') ? 'bag' : 'strength';
+    const dayType = state.hasBags === 'yes' ? 'bag' : 'strength';
     workout = buildFightDay(state.selection, dayType, phase, config);
   }
 
@@ -128,13 +181,14 @@ function generateSingleWorkout() {
   document.getElementById('workout-title').textContent = name + ' — ' + levelLabel;
 
   const modeLabel = { pt: 'PT Test Prep', fight: 'Fight Night', general: 'General Fitness' }[state.mode] || '';
+  const equipLabel = { bodyweight: 'Bodyweight', garage: 'Garage Gym', full: 'Full Gym' }[state.equip] || state.equip;
   const metaTags = {
     level: levelLabel,
-    time: state.time + ' min',
     type: modeLabel,
-    equip: { none:'No Equipment', basic:'Basic Gym', full:'Full Gym', bags:'Bags & Pads' }[state.equip],
+    equip: equipLabel,
   };
   if (state.mode === 'fight') metaTags.partner = state.partner === 'yes' ? 'With Partner' : 'Solo';
+  if (state.mode === 'fight' && state.hasBags === 'yes') metaTags.bags = 'Bags & Pads';
 
   const metaHTML = Object.values(metaTags).map(v => `<span class="meta-tag">${v}</span>`).join('');
   document.getElementById('workout-output').innerHTML =
@@ -152,9 +206,11 @@ function buildPlan() {
     selection:   state.selection,
     daysPerWeek: parseInt(state.planDays),
     totalWeeks:  parseInt(state.planWeeks),
-    time:        state.planTime,
+    level:       state.planLevel,
     equip:       state.planEquip,
     partner:     state.planPartner,
+    hasBags:     state.planHasBags,
+    garageEquip,
   };
 
   currentPlan = generatePlan(config);
@@ -168,7 +224,6 @@ function renderPlan(plan) {
   const metaTags = [
     plan.totalWeeks + ' weeks',
     plan.daysPerWeek + ' days/week',
-    plan.planTime ? plan.planTime + ' min sessions' : '',
     { easy: 'Easy', average: 'Average', difficult: 'Difficult', 'very-difficult': 'Very Difficult' }[state.planLevel] || capitalize(state.planLevel),
   ].filter(Boolean).map(v => `<span class="meta-tag">${v}</span>`).join('');
 
@@ -361,14 +416,31 @@ function refreshExercise(btn) {
   const pool = resolvePool(poolKey);
   if (!pool || pool.length < 2) return;
 
-  const currentName = row.querySelector('.exercise-name')?.textContent || '';
-  const available = pool.filter(ex => (ex.name || ex) !== currentName);
+  // Exclude every exercise already visible in this section
+  const shownNames = new Set(
+    [...document.querySelectorAll(`.exercise-row[data-pool-key="${poolKey}"] .exercise-name`)]
+      .map(el => el.textContent.trim())
+  );
+  let available = pool.filter(ex => !shownNames.has((ex.name || ex).trim()));
+  // Fallback: pool exhausted — only exclude the current exercise
+  if (!available.length) {
+    const currentName = row.querySelector('.exercise-name')?.textContent.trim() || '';
+    available = pool.filter(ex => (ex.name || ex).trim() !== currentName);
+  }
   if (!available.length) return;
 
   const pick = available[Math.floor(Math.random() * available.length)];
-  const ex = typeof pick === 'string'
+  let ex = typeof pick === 'string'
     ? { name: pick, note: 'Work this combo the full round', prescription: row.querySelector('.exercise-prescription')?.textContent || '3 min' }
-    : pick;
+    : { ...pick };
+
+  // Apply difficulty prescription scaling for general categories
+  const parts = poolKey.split(':');
+  if (parts[0] === 'general') {
+    const selection = parts[1];
+    const level = currentPlan?.level || state.level || 'easy';
+    ex.prescription = scalePrescription(ex, level, selection);
+  }
 
   const nameEl = row.querySelector('.exercise-name');
   const noteEl = row.querySelector('.exercise-note');
@@ -382,21 +454,47 @@ function refreshExercise(btn) {
   setTimeout(() => row.classList.remove('row-refreshed'), 500);
 }
 
+const WARMUP_POOL_MAP = {
+  'warmup:squat':        () => WARMUPS_LOWER,
+  'warmup:hinge':        () => WARMUPS_LOWER,
+  'warmup:carry':        () => WARMUPS_LOWER,
+  'warmup:push':         () => WARMUPS_UPPER,
+  'warmup:pull':         () => WARMUPS_UPPER,
+  'warmup:core':         () => WARMUPS_CORE,
+  'warmup:conditioning': () => WARMUPS_CONDITIONING,
+  'warmup:track-day':    () => WARMUPS_TRACK,
+  'warmup:fight':        () => WARMUPS_FIGHT,
+  'warmup:pt':           () => WARMUPS_CONDITIONING,
+  'warmup:general':      () => WARMUPS_FIGHT,
+  'warmup:active':       () => WARMUPS_FIGHT,
+  'warmup:mt':           () => WARMUPS_FIGHT,
+};
+
 function resolvePool(poolKey) {
   if (!poolKey) return null;
   if (poolKey === 'mt-combos')  return MT_COMBOS;
   if (poolKey === 'mt-drills')  return MT_DRILLS.map(d => ({ name: d.name, note: d.desc }));
   if (poolKey.startsWith('bjj-drills:'))  return BJJ_DRILLS[poolKey.split(':')[1]] || null;
   if (poolKey.startsWith('judo-drills:')) return JUDO_DRILLS[poolKey.split(':')[1]] || null;
-  if (poolKey === 'warmup:general' || poolKey === 'warmup:active' || poolKey === 'warmup:mt') return WARMUPS;
+  if (WARMUP_POOL_MAP[poolKey]) return WARMUP_POOL_MAP[poolKey]();
   const parts = poolKey.split(':');
   if (parts[0] === 'pt') {
     const [, sel, lv, bucket] = parts;
     return PT_WORKOUTS[sel]?.[lv]?.[parseInt(bucket)] || null;
   }
   if (parts[0] === 'general') {
-    const [, cat, lv] = parts;
-    return GENERAL_WORKOUTS[cat]?.[lv] || null;
+    const [, cat] = parts;
+    const catData = GENERAL_WORKOUTS[cat];
+    if (!catData) return null;
+    // All difficulty levels combined — difficulty only affects sets/reps scaling
+    const raw = [
+      ...(catData.beginner    || []),
+      ...(catData.intermediate || []),
+      ...(catData.advanced    || []),
+    ];
+    const equip = currentPlan?.equip || state.equip || 'full';
+    const ge = currentPlan?.garageEquip || garageEquip || [];
+    return filterByEquip(raw, equip, ge);
   }
   if (parts[0] === 'fight') {
     const [, sel, type, lv] = parts;
@@ -481,11 +579,6 @@ function renderWorkoutSections(sections) {
 
 // ── Init ───────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  const section = new URLSearchParams(window.location.search).get('s');
-  if (section === 'pt')      { check1RMOnStart(); showScreen('pt-select'); }
-  else if (section === 'fight')   { check1RMOnStart(); showScreen('fight-select'); }
-  else if (section === 'general') { check1RMOnStart(); showScreen('general-select'); }
-  else { check1RMOnStart(); }
   ['event-name-input', 'event-goal-input'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') addCustomEvent(); });
