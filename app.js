@@ -70,6 +70,127 @@ function showScreen(id) {
   updateTimerVisibility(id);
 }
 
+// ── PT Score Data ───────────────────────────────
+const PT_SCORES = {
+  'army-acft': {
+    label: 'Male, Age 17–21',
+    tables: [
+      { title: 'ACFT', headers: ['Event', 'Min (60 pts)', 'Max (100 pts)'], rows: [
+        ['3 Rep Max Deadlift', '140 lbs', '340 lbs'],
+        ['Standing Power Throw', '4.5 m', '12.5 m'],
+        ['Hand-Release Push-Up', '10 reps', '60 reps'],
+        ['Sprint-Drag-Carry', '3:35', '1:33'],
+        ['Plank', '2:09', '3:40'],
+        ['2-Mile Run', '21:00', '13:22'],
+      ]},
+      { title: 'RPA (Ranger Physical Assessment)', headers: ['Event', 'Standard'], rows: [
+        ['800m Run', 'Pass / Fail'],
+        ['Push-Ups (dead-stop)', '30 reps'],
+        ['100m Sprint', 'Pass / Fail'],
+        ['Sandbag Lifts (40 lb → 68" platform)', '16 reps'],
+        ["Farmer's Carry 50m (2 × 40 lb cans)", 'Pass / Fail'],
+        ['Movement Drill 50m (25m high crawl + 25m rush)', 'Pass / Fail'],
+        ['800m Run (final)', 'Pass / Fail'],
+        ['— 10-min break —', ''],
+        ['4-Mile Run', '32:00 or less'],
+        ['Chin-Ups (strict)', '6 reps minimum'],
+      ]},
+      { title: 'Air Assault PT Standard', headers: ['Event', 'Minimum', 'Standard'], rows: [
+        ['ACFT Total Score', '180 pts', 'All events must pass'],
+        ['12-Mile Ruck March', 'Complete', '3:00:00 time limit'],
+        ['1-Mile Run', 'Complete', 'Required at start of course'],
+      ]},
+    ],
+  },
+  'marine-pft': {
+    label: 'Male, Age 17–20',
+    tables: [
+      { title: 'PFT', headers: ['Event', 'Min', 'Max'], rows: [
+        ['Pull-Ups', '3 reps', '20 reps'],
+        ['Crunches (2 min)', '70 reps', '100 reps'],
+        ['3-Mile Run', '28:00', '18:00'],
+      ]},
+      { title: 'CFT', headers: ['Event', 'Min', 'Max'], rows: [
+        ['Movement to Contact (880m)', '3:27', '2:39'],
+        ['Ammo Can Lifts (30 lb)', '37 reps', '98 reps'],
+        ['Maneuver Under Fire', '3:17', '2:21'],
+      ]},
+      { title: 'RPAT (Raider Selection)', headers: ['Event', 'Minimum', 'Target'], rows: [
+        ['Pull-Ups', '20 reps', '20 reps (max PFT score)'],
+        ['Crunches (2 min)', '100 reps', '100 reps (max PFT score)'],
+        ['3-Mile Run', '18:00', 'Sub-18:00'],
+        ['PFT Total Score', '285 / 300', '300 / 300'],
+      ]},
+      { title: 'MARSOC A&S Screening', headers: ['Event', 'Minimum', 'Standard'], rows: [
+        ['Pull-Ups', '20 reps', 'Max score required'],
+        ['3-Mile Run', '18:00', 'Sub-18:00'],
+        ['500m Swim (any stroke)', '12:00', 'Unassisted'],
+        ['ACFT Score', 'Passing', 'Must meet all event minimums'],
+      ]},
+    ],
+  },
+  'navy-prt': {
+    label: 'Male, Age 17–19',
+    tables: [
+      { title: 'PRT', headers: ['Event', 'Min (Satisfactory)', 'Max (Outstanding)'], rows: [
+        ['Push-Ups (2 min)', '42 reps', '100 reps'],
+        ['Plank', '1:03', '3:30'],
+        ['1.5-Mile Run', '12:51', '8:15'],
+      ]},
+      { title: 'SEAL PST', headers: ['Event', 'Minimum', 'Competitive'], rows: [
+        ['500-yd Swim (CSS)', '12:30', '8:00'],
+        ['Push-Ups (2 min)', '50 reps', '80+ reps'],
+        ['Sit-Ups (2 min)', '50 reps', '80+ reps'],
+        ['Pull-Ups', '10 reps', '15+ reps'],
+        ['1.5-Mile Run', '10:30', '9:30'],
+      ]},
+      { title: 'SWCC PST', headers: ['Event', 'Minimum', 'Competitive'], rows: [
+        ['500-yd Swim (CSS)', '13:00', '10:00'],
+        ['Push-Ups (2 min)', '42 reps', '80+ reps'],
+        ['Sit-Ups (2 min)', '52 reps', '80+ reps'],
+        ['Pull-Ups', '6 reps', '12+ reps'],
+        ['1.5-Mile Run', '11:00', '9:30'],
+      ]},
+    ],
+  },
+  'airforce-fa': {
+    label: 'Male, Age 17–29',
+    tables: [
+      { title: 'Fitness Assessment', headers: ['Event', 'Min (Satisfactory)', 'Max (Excellent)'], rows: [
+        ['Push-Ups (1 min)', '33 reps', '67 reps'],
+        ['Sit-Ups (1 min)', '42 reps', '58 reps'],
+        ['1.5-Mile Run', '13:36', '9:12'],
+      ]},
+      { title: 'AFSPECWAR PAST', headers: ['Event', 'Minimum', 'Competitive'], rows: [
+        ['500m Swim w/ Fins', '12:00', '10:00'],
+        ['Underwater Swim 25m', 'Pass / Fail', '—'],
+        ['Push-Ups (2 min)', '50 reps', '80+ reps'],
+        ['Sit-Ups (2 min)', '50 reps', '80+ reps'],
+        ['Pull-Ups', '10 reps', '15+ reps'],
+        ['1.5-Mile Run', '10:30', '9:30'],
+      ]},
+    ],
+  },
+};
+
+function toggleScoresPanel() {
+  const panel = document.getElementById('pt-scores-panel');
+  if (panel.style.display !== 'none') { panel.style.display = 'none'; return; }
+  const data = PT_SCORES[state.selection];
+  if (!data) return;
+  let html = `<p style="font-size:0.8rem;color:var(--muted);margin:0.75rem 0 1rem;">${data.label}</p>`;
+  for (const tbl of data.tables) {
+    if (tbl.title) html += `<h3 style="margin:1rem 0 0.5rem;font-size:1rem;">${tbl.title}</h3>`;
+    html += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:0.85rem;">';
+    html += '<thead><tr>' + tbl.headers.map(h => `<th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);color:var(--muted);">${h}</th>`).join('') + '</tr></thead>';
+    html += '<tbody>' + tbl.rows.map(r =>
+      '<tr>' + r.map((c, i) => `<td style="padding:6px 8px;border-bottom:1px solid var(--border);${i > 0 ? 'text-align:center;' : ''}">${c}</td>`).join('') + '</tr>'
+    ).join('') + '</tbody></table></div>';
+  }
+  panel.innerHTML = html;
+  panel.style.display = 'block';
+}
+
 // ── Test / Fight Selection ─────────────────────
 function selectTest(key) {
   state.mode = 'pt';
@@ -81,6 +202,12 @@ function selectTest(key) {
   document.getElementById('plan-partner-wrap').style.display = 'none';
   document.getElementById('single-bags-wrap').style.display = 'none';
   document.getElementById('plan-bags-wrap').style.display = 'none';
+  // Show Scores card only for tests that have score data
+  const scoresCard = document.getElementById('scores-card');
+  if (scoresCard) scoresCard.style.display = PT_SCORES[key] ? '' : 'none';
+  // Reset scores panel when switching tests
+  const panel = document.getElementById('pt-scores-panel');
+  if (panel) { panel.style.display = 'none'; panel.innerHTML = ''; }
   showScreen('plan-options');
 }
 

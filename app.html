@@ -55,8 +55,6 @@
       <div class="option-card" onclick="selectTest('marine-pft')"><strong>Marines</strong><span>PFT / CFT</span></div>
       <div class="option-card" onclick="selectTest('navy-prt')"><strong>Navy</strong><span>PRT</span></div>
       <div class="option-card" onclick="selectTest('airforce-fa')"><strong>Air Force</strong><span>Fitness Assessment</span></div>
-      <div class="option-card" onclick="selectTest('coastguard-pt')"><strong>Coast Guard</strong><span>PT Test</span></div>
-      <div class="option-card" onclick="selectTest('spacforce-fa')"><strong>Space Force</strong><span>Fitness Assessment</span></div>
       <div class="option-card" onclick="selectTest('ntoa-pt')"><strong>Law Enforcement</strong><span>NTOA PT Test</span></div>
       <div class="option-card highlight" onclick="showScreen('custom-test')"><strong>Custom</strong><span>Build Your Own Test</span></div>
     </div>
@@ -112,7 +110,13 @@
         <h2>Training Plan</h2>
         <p>Build a progressive plan up to 8 weeks</p>
       </div>
+      <div class="path-card" id="scores-card" style="display:none;" onclick="toggleScoresPanel()">
+        <div class="card-icon">📊</div>
+        <h2>Scores</h2>
+        <p>Min &amp; max scores for your test</p>
+      </div>
     </div>
+    <div id="pt-scores-panel" style="display:none; padding: 0 1rem 1.5rem;"></div>
   </div>
 
   <!-- SINGLE WORKOUT CUSTOMISE -->
