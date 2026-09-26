@@ -479,7 +479,22 @@
 
   <!-- ─── FEEDBACK MODAL ─── -->
   <!-- Timer flash overlay -->
-  <div id="timer-flash" style="display:none;position:fixed;inset:0;z-index:99999;pointer-events:none;background:#00ff66;opacity:0;"></div>
+  <style>
+    @keyframes timerFlash {
+      0%   { opacity: 0; }
+      10%  { opacity: 0.85; }
+      25%  { opacity: 0; }
+      38%  { opacity: 0.85; }
+      53%  { opacity: 0; }
+      65%  { opacity: 0.85; }
+      80%  { opacity: 0; }
+      100% { opacity: 0; }
+    }
+    #timer-flash.flashing {
+      animation: timerFlash 3.4s ease-in-out forwards;
+    }
+  </style>
+  <div id="timer-flash" style="display:none;position:fixed;inset:0;z-index:99999;pointer-events:none;background:#00ff66;"></div>
 
   <div id="feedback-modal" class="modal-backdrop">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="feedback-title">
