@@ -109,7 +109,6 @@ function timerTick() {
   if (timerState.secondsLeft <= 0) {
     handleTimerTransition();
   } else {
-    if (timerState.secondsLeft <= 3) beepTick();
     updateTimerDisplay();
   }
 }
@@ -118,7 +117,6 @@ function handleTimerTransition() {
   if (timerState.mode === 'countdown') {
     timerState.phase = 'done';
     pauseTimer();
-    beepDone();
     flashScreen();
     updateTimerDisplay();
     return;
@@ -126,12 +124,10 @@ function handleTimerTransition() {
 
   // Round timer logic
   if (timerState.phase === 'work') {
-    beepEnd();
     if (timerState.currentRound >= timerState.rounds) {
       timerState.phase = 'done';
       pauseTimer();
-      beepDone();
-      flashScreen();
+      setTimeout(flashScreen, 50);
     } else {
       timerState.phase = 'rest';
       timerState.secondsLeft = timerState.restSec;
@@ -140,7 +136,6 @@ function handleTimerTransition() {
     timerState.currentRound++;
     timerState.phase = 'work';
     timerState.secondsLeft = timerState.workMin * 60;
-    beepStart();
   }
   updateTimerDisplay();
 }
@@ -210,54 +205,18 @@ function updateTimerDisplay() {
   }
 }
 
-// ── Audio ──────────────────────────────────────
-function getAudioCtx() {
-  if (!window._audioCtx) {
-    window._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  return window._audioCtx;
-}
-
-function playTone(freq, duration, gain = 0.4) {
-  try {
-    const ctx = getAudioCtx();
-    const osc  = ctx.createOscillator();
-    const vol  = ctx.createGain();
-    osc.connect(vol);
-    vol.connect(ctx.destination);
-    osc.type = 'sine';
-    osc.frequency.value = freq;
-    vol.gain.setValueAtTime(gain, ctx.currentTime);
-    vol.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + duration);
-  } catch (e) {}
-}
-
-function beepStart() { playTone(880, 0.18); setTimeout(() => playTone(880, 0.18), 200); }
-function beepEnd()   { playTone(440, 0.25); setTimeout(() => playTone(330, 0.25), 280); setTimeout(() => playTone(220, 0.35), 560); }
-function beepDone()  { playTone(660, 0.2); setTimeout(() => playTone(660, 0.2), 220); setTimeout(() => playTone(880, 0.5), 440); }
-function beepTick()  { playTone(660, 0.08, 0.2); }
 
 function flashScreen() {
   const el = document.getElementById('timer-flash');
   if (!el) return;
   el.classList.remove('flashing');
-  void el.offsetWidth; // force reflow so animation restarts
   el.style.display = 'block';
+  void el.offsetWidth; // force reflow after display:block so animation starts fresh
   el.classList.add('flashing');
   setTimeout(() => { el.style.display = 'none'; el.classList.remove('flashing'); }, 3500);
 }
 
 // Unlock Web Audio on first user interaction (required on iOS/Android)
-function unlockAudio() {
-  const ctx = getAudioCtx();
-  if (ctx.state === 'suspended') ctx.resume();
-  document.removeEventListener('touchstart', unlockAudio, true);
-  document.removeEventListener('click', unlockAudio, true);
-}
-document.addEventListener('touchstart', unlockAudio, true);
-document.addEventListener('click', unlockAudio, true);
 
 // Show/hide the floating timer shortcut based on current screen
 function updateTimerVisibility(screenId) {
