@@ -768,16 +768,43 @@ header {
 .timer-ctrl-btn.primary:hover { filter: brightness(1.08); color: var(--on-accent); }
 .timer-ctrl-btn.primary svg { width: 32px; height: 32px; }
 
-.timer-config { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
-.timer-config-row {
-  display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 8px 8px 8px 14px;
+/* Settings: one full-width row per setting — label left, stepper right */
+.timer-config {
+  display: flex; flex-direction: column;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  max-width: 480px; margin: 0 auto;
 }
-.timer-config-row label { font-size: 0.85rem; color: var(--muted); }
-.num-adj { display: flex; align-items: center; gap: 4px; }
-.num-adj button { background: var(--surface2); border: 1px solid var(--border); color: var(--text); width: 40px; height: 40px; border-radius: 10px; font-size: 1.1rem; line-height: 1; transition: border-color 0.12s; }
+.timer-config-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  min-height: 76px; padding: 12px 12px 12px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.timer-config-row:last-child { border-bottom: none; }
+.timer-config-row label {
+  display: flex; flex-direction: column; gap: 2px;
+  font-family: var(--display); font-size: 1.35rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em; color: var(--text);
+}
+.timer-config-row label small {
+  font-family: var(--body); font-size: 0.8rem; font-weight: 500;
+  text-transform: none; letter-spacing: 0; color: var(--muted);
+}
+.num-adj { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.num-adj button {
+  width: 52px; height: 52px; border-radius: 12px;
+  background: var(--surface2); border: 1px solid var(--border2); color: var(--text);
+  font-size: 1.5rem; font-weight: 600; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  touch-action: manipulation;
+  transition: border-color 0.12s, background 0.12s;
+}
 .num-adj button:hover { border-color: var(--accent); }
-.num-adj span { min-width: 32px; text-align: center; font-family: var(--mono); font-size: 1rem; font-weight: 700; }
+.num-adj button:active { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.num-adj span {
+  min-width: 56px; text-align: center;
+  font-family: var(--mono); font-size: 1.6rem; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
 
 /* ── Workout Tracker / Calendar ── */
 .tracker-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
