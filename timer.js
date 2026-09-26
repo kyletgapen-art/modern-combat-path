@@ -234,8 +234,24 @@ function playTone(freq, duration, gain = 0.4) {
 
 function beepStart() { playTone(880, 0.18); setTimeout(() => playTone(880, 0.18), 200); }
 function beepEnd()   { playTone(440, 0.25); setTimeout(() => playTone(330, 0.25), 280); setTimeout(() => playTone(220, 0.35), 560); }
-function beepDone()  { playTone(660, 0.2); setTimeout(() => playTone(660, 0.2), 220); setTimeout(() => playTone(880, 0.5), 440); }
+function beepDone()  { playTone(660, 0.2); setTimeout(() => playTone(660, 0.2), 220); setTimeout(() => playTone(880, 0.5), 440); flashScreen(); }
 function beepTick()  { playTone(660, 0.08, 0.2); }
+
+function flashScreen() {
+  const el = document.getElementById('timer-flash');
+  if (!el) return;
+  el.style.display = 'block';
+  let count = 0;
+  function step() {
+    if (count >= 6) { el.style.display = 'none'; el.style.opacity = 0; return; }
+    const on = count % 2 === 0;
+    el.style.transition = on ? 'opacity 0.08s ease-in' : 'opacity 0.18s ease-out';
+    el.style.opacity = on ? 0.85 : 0;
+    count++;
+    setTimeout(step, on ? 120 : 220);
+  }
+  step();
+}
 
 // Show/hide the floating timer shortcut based on current screen
 function updateTimerVisibility(screenId) {
