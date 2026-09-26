@@ -97,10 +97,10 @@ const DAY_FOCUS = {
 
 // ── Bag Round Sequences ───────────────────────
 const MT_SEQS = {
-  3: ['combo','drill','freestyle'],
-  4: ['combo','drill','freestyle','punches-elbows'],
-  5: ['combo','drill','freestyle','punches-elbows','kicks-knees-teeps'],
-  6: ['combo','combo','drill','freestyle','punches-elbows','kicks-knees-teeps'],
+  3: ['combo', 'drill', 'combo'],
+  4: ['combo', 'drill', 'combo', 'drill'],
+  5: ['combo', 'combo', 'drill', 'combo', 'drill'],
+  6: ['combo', 'combo', 'drill', 'combo', 'drill', 'combo'],
 };
 
 function buildBagRounds(fightKey, phase) {
@@ -366,40 +366,7 @@ function scaleTrackRx(ex, level) {
   return scaleConditioningRx(ex.prescription, level);
 }
 
-function buildFullBodyDay(phase, config) {
-  const level = config.level || 'easy';
-  const exLevel = resolveExerciseLevel(phase.exerciseLevel);
-  const cats = ['squat', 'hinge', 'push', 'pull', 'carry', 'core'];
-  const condPool = Math.random() < 0.5 ? 'conditioning' : 'track-day';
-
-  const exercises = [...cats, condPool].map(cat => {
-    const catData = GENERAL_WORKOUTS[cat];
-    if (!catData) return null;
-    const all = [
-      ...(catData.beginner     || []),
-      ...(catData.intermediate || []),
-      ...(catData.advanced     || []),
-    ];
-    const filtered = filterByEquip(all, config.equip, config.garageEquip);
-    const pool = filtered.length >= 1 ? filtered : all.filter(ex => !ex.equip || ex.equip === 'bw');
-    const pick = pool[Math.floor(Math.random() * pool.length)];
-    if (!pick) return null;
-    return { ...pick, prescription: scalePrescription(pick, level, cat), _cat: cat };
-  }).filter(Boolean);
-
-  return {
-    title: 'Full Body',
-    phaseNote: phase.theme,
-    sections: exercises.map(ex => ({
-      heading: GENERAL_WORKOUTS[ex._cat]?.name || ex._cat,
-      items: [{ ...ex }],
-      poolKey: `general:${ex._cat}:${exLevel}`,
-    })),
-  };
-}
-
 function buildGeneralDay(selection, phase, config) {
-  if (selection === 'full-body') return buildFullBodyDay(phase, config);
   const cat = GENERAL_WORKOUTS[selection];
   if (!cat) return null;
   const exLevel = resolveExerciseLevel(phase.exerciseLevel);
@@ -509,6 +476,53 @@ function buildFightDay(selection, dayType, phase, config) {
   const phaseWithDuration = { ...phase, roundDuration: getFightRoundDuration(level) };
   let sections = [], heading = '';
 
+  // Muay Thai gets fixed warm-up lists per difficulty, each item at 1 round × round duration
+  const isMT = selection === 'muay-thai';
+  const warmupPoolKey = isMT ? 'warmup:mt' : 'warmup:fight';
+  let warmupItems;
+  if (isMT) {
+    const roundDur = getFightRoundDuration(level);
+    const rx = `1 × ${roundDur} min`;
+    const w = name => ({ name, prescription: rx });
+    const MT_WARMUPS_BY_LEVEL = {
+      easy: [
+        w('Shadowboxing'),
+        w('Jump Rope'),
+        w('Warm-Up Run'),
+        w('Freestyle'),
+      ],
+      average: [
+        w('Jump Rope'),
+        w('Kicks, Knees & Teeps Only'),
+        w('Punches & Elbows Only'),
+        w('Freestyle'),
+        w('Warm-Up Run'),
+      ],
+      difficult: [
+        w('Jump Rope'),
+        w('Shadowboxing'),
+        w('Kicks, Knees & Teeps Only'),
+        w('Punches & Elbows Only'),
+        w('Freestyle'),
+        w('Kick Check Kick'),
+        w('Counters'),
+      ],
+      'very-difficult': [
+        w('Warm-Up Run'),
+        { name: 'Air Squats', note: '10 reps in-between each warm-up', prescription: '' },
+        { name: 'Push Ups', note: '10 reps in-between each warm-up', prescription: '' },
+        w('Kicks, Knees & Teeps Only'),
+        w('Punches & Elbows Only'),
+        w('Freestyle'),
+        w('Kick Check Kick'),
+        w('Counters'),
+      ],
+    };
+    warmupItems = MT_WARMUPS_BY_LEVEL[level] || MT_WARMUPS_BY_LEVEL.easy;
+  } else {
+    warmupItems = pickRandom([...WARMUPS_FIGHT], 3);
+  }
+
   if (dayType === 'bag') {
     heading = isGrappling ? 'Drilling — ' + fight.name : 'Bag Work — ' + fight.name;
     const rounds = isGrappling
@@ -516,7 +530,7 @@ function buildFightDay(selection, dayType, phase, config) {
       : buildBagRounds(selection, phaseWithDuration);
     const bagMainKey = isGrappling ? `${selection}-drills:${exLevel}` : 'mt-combos';
     sections = [
-      { heading: 'Warm-Up', items: pickRandom([...WARMUPS_FIGHT], 3), poolKey: 'warmup:fight' },
+      { heading: 'Warm-Up', items: warmupItems, poolKey: warmupPoolKey },
       { heading: heading, items: rounds, poolKey: bagMainKey },
     ];
   } else if (dayType === 'strength') {
@@ -527,7 +541,7 @@ function buildFightDay(selection, dayType, phase, config) {
       prescription: scalePrescription(ex, level, 'squat'),
     }));
     sections = [
-      { heading: 'Warm-Up', items: pickRandom([...WARMUPS_FIGHT], 3), poolKey: 'warmup:fight' },
+      { heading: 'Warm-Up', items: warmupItems, poolKey: warmupPoolKey },
       { heading: heading, items: exercises, poolKey: `fight:${selection}:weights:${exLevel}` },
     ];
   } else {
@@ -537,7 +551,7 @@ function buildFightDay(selection, dayType, phase, config) {
     const exercises = buildTechniqueRounds(selection, phaseWithDuration, hasPartner);
     const techKey = hasPartner ? `fight:${selection}:partner:${exLevel}` : 'mt-combos';
     sections = [
-      { heading: 'Warm-Up', items: pickRandom([...WARMUPS_FIGHT], 3), poolKey: 'warmup:fight' },
+      { heading: 'Warm-Up', items: warmupItems, poolKey: warmupPoolKey },
       { heading: heading, items: exercises, poolKey: techKey },
     ];
   }

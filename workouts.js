@@ -586,6 +586,76 @@ const PT_WORKOUTS = {
     },
   },
 
+  "txdps-pt": {
+    name: "TX DPS Physical Fitness Test",
+    events: ["1.5-Mile Run", "500m Row Test", "4-Minute Row Test"],
+    beginner: {
+      30: [
+        { name: "1-Mile Easy Run", note: "Build aerobic base — comfortable conversational pace", prescription: "1 mile" },
+        { name: "500m Row", note: "Moderate pace — focus on consistent stroke rate and form", prescription: "2 × 500m" },
+      ],
+      45: [
+        { name: "1.5-Mile Run", note: "Build to test distance at a comfortable pace", prescription: "1.5 miles" },
+        { name: "500m Row", note: "Moderate effort — build stroke efficiency", prescription: "3 × 500m" },
+        { name: "4-Minute Row", note: "Aim for consistent output — note meters rowed for baseline", prescription: "1 × 4 min" },
+      ],
+      60: [
+        { name: "1.5-Mile Run", note: "Moderate effort — breathe controlled", prescription: "1.5 miles" },
+        { name: "500m Row Intervals", note: "Rest 2 min between — build endurance", prescription: "4 × 500m" },
+        { name: "4-Minute Row", note: "Track meters — aim for improvement each session", prescription: "1 × 4 min" },
+      ],
+      90: [
+        { name: "1.5-Mile Run × 2", note: "Rest 5 min between — build run volume", prescription: "2 runs" },
+        { name: "500m Row Intervals", note: "Moderate effort — focus on pacing", prescription: "5 × 500m" },
+        { name: "4-Minute Row", note: "Record meters for baseline", prescription: "2 × 4 min" },
+      ],
+    },
+    intermediate: {
+      30: [
+        { name: "1.5-Mile Tempo Run", note: "Hard but controlled — near test effort", prescription: "1.5 miles" },
+        { name: "500m Row — Race Pace", note: "Work toward 1:34 passing standard — record time", prescription: "3 × 500m" },
+      ],
+      45: [
+        { name: "1.5-Mile Time Trial", note: "Record time — work toward 11:33 passing standard", prescription: "1 run" },
+        { name: "500m Row — Push Pace", note: "Target sub-1:34 — short rest between", prescription: "4 × 500m" },
+        { name: "4-Minute Row", note: "Target 1,049m+ (passing standard)", prescription: "1 × 4 min" },
+      ],
+      60: [
+        { name: "1.5-Mile Run × 2", note: "Test pace both runs — 5 min rest", prescription: "2 runs" },
+        { name: "500m Row Intervals", note: "Alternate hard / recovery pace", prescription: "6 × 500m" },
+        { name: "4-Minute Row", note: "Max effort — record meters each set", prescription: "2 × 4 min" },
+      ],
+      90: [
+        { name: "1.5-Mile Run × 2", note: "Race pace — full rest between", prescription: "2 time trials" },
+        { name: "500m Row Time Trials", note: "Max effort — record splits", prescription: "4 × 500m" },
+        { name: "4-Minute Row", note: "Record meters each session — push output", prescription: "3 × 4 min" },
+        { name: "Core Circuit", note: "Plank, dead bug, hollow body", prescription: "3 rounds × 30 sec each" },
+      ],
+    },
+    advanced: {
+      30: [
+        { name: "1.5-Mile Time Trial", note: "PR effort — full race pace", prescription: "1 run" },
+        { name: "500m Row — Max Effort", note: "Record time each split", prescription: "4 × 500m" },
+      ],
+      45: [
+        { name: "1.5-Mile Time Trial", note: "Full race effort — simulate test conditions", prescription: "1 run" },
+        { name: "500m Row Max Intervals", note: "Full rest between — record each split", prescription: "4 × 500m" },
+        { name: "4-Minute Row — Max Output", note: "Push past 1,049m passing standard", prescription: "2 × 4 min" },
+      ],
+      60: [
+        { name: "1.5-Mile × 2 — PR Pace", note: "Full rest between runs", prescription: "2 time trials" },
+        { name: "500m Row Max Sets", note: "Record splits — push each one", prescription: "6 × 500m" },
+        { name: "4-Minute Row Simulation", note: "Simulate test conditions — max output", prescription: "2 × 4 min" },
+      ],
+      90: [
+        { name: "Full Test Simulation", note: "1.5-mile run, rest, 500m row, rest, 4-min row — simulate test order", prescription: "1 full sim" },
+        { name: "1.5-Mile Interval Work", note: "400m repeats at mile race pace", prescription: "6 × 400m" },
+        { name: "500m Row Max Sets", note: "Full effort — record all splits", prescription: "6 × 500m" },
+        { name: "4-Minute Row", note: "Max effort — target improvement each session", prescription: "2 × 4 min" },
+      ],
+    },
+  },
+
   "ntoa-pt": {
     name: "NTOA Law Enforcement PT",
     events: ["1.5-Mile Run", "Push-ups", "Sit-ups", "Vertical Jump", "300m Sprint"],
@@ -672,7 +742,6 @@ const PT_WORKOUTS = {
 // Combos are picked randomly each session — no difficulty gate.
 
 const MT_COMBOS = [
-  // Basic Hand Combos
   'Jab, Cross',
   'Jab, Cross, Jab, Cross',
   'Jab, Cross, Hook',
@@ -680,7 +749,21 @@ const MT_COMBOS = [
   'Jab, Jab, Cross',
   'Jab, Cross, Lead Body Hook',
   'Fake Jab, Cross, Lead Hook',
-  // Elbow Focused
+  'Inside Lead Kick, Cross',
+  'Rear Swing Kick, Cross',
+  'Switch Kick, Cross',
+  'Jab, Low Kick',
+  'Jab, Cross, Hook, Low Kick',
+  'Cross, Hook, Low Kick',
+  'Jab-Hook, Low Kick',
+  'Rear Uppercut, Hook, Low Kick',
+  'Lead Hook, Low Kick',
+  'Jab, Feint, Lead Leg Kick to the Body',
+  'Inside Leg Kick, Cross',
+  'Switch Kick, Cross, Hook, Low Kick',
+  'Jab, Body Cross, Lead Hook, Low Kick',
+  'Jab, Cross, Lead Uppercut, Low Kick',
+  'Jab, Cross, Hook, Rear Leg Kick',
   'Lead Up Elbow, Rear Side Elbow',
   'Lead Side Elbow, Rear Up Elbow',
   'Jab, Lead Up Elbow, Rear Side Elbow',
@@ -690,7 +773,17 @@ const MT_COMBOS = [
   'Jab, Cross, Left Knee, Right Elbow',
   'Lead Uppercut, Cross, Lead Body Hook, Switch Knee, Elbow',
   'Body Cross, Rear Knee, Rear Elbow',
-  // Kick Focused
+  'Cross, Rear Knee',
+  'Jab, Switch Knee',
+  'Jab, Cross, Switch Knee',
+  'Left Hook, Rear Knee',
+  'Cross, Hook, Rear Knee',
+  'Lead Teep, Fake Lead Teep, Rear Knee',
+  'Teep, Feint, Knee',
+  'Parry Jab, Rear Knee',
+  'Parry Cross, Switch Knee',
+  'Shin Block Lead Kick, Lead Knee',
+  'Shin Block Rear Kick, Rear Knee',
   'Jab, Cross, Hook, Rear Swing Kick',
   'Jab, Rear Swing Kick',
   'Jab, Cross, Switch Lead Kick',
@@ -699,64 +792,22 @@ const MT_COMBOS = [
   'Hook, Cross, Lead Swing Kick',
   'Jab, Jab, Cross, Swing Kick',
   'Jab, Lead Uppercut, Cross, Switch Kick',
-  'Inside Lead Kick, Cross',
-  'Jab, Body Cross, Lead Hook, Low Kick',
   'Lead Teep, Rear Swing Kick × 2',
-  'Rear Swing Kick, Lead Teep',
   'Cross, Switch Kick × 2',
   'Jab, Cross, Switch Kick',
-  'Jab, Cross, Hook, Rear Leg Kick',
-  'Jab, Cross, Lead Uppercut, Low Kick',
   'Jab, Cross, Lead Hook to the Body, Rear Roundhouse',
   'Inside Leg Kick, Double Roundhouse Kick',
-  // Low Kick Focused
-  'Jab, Low Kick',
-  'Jab, Cross, Hook, Low Kick',
-  'Cross, Hook, Low Kick',
-  'Jab-Hook, Low Kick',
-  'Rear Uppercut, Hook, Low Kick',
-  'Lead Hook, Low Kick',
-  'Jab, Feint, Lead Leg Kick to the Body',
-  'Inside Leg Kick, Cross',
-  // Teep Focused
+  'Teep, Fake Teep, Rear Swing Kick',
+  'Lead Teep, Rear Swing Kick',
+  'Lead Push Kick, Rear Swing Kick',
+  'Rear Push Kick, Lead Swing Kick',
+  'Inside Low Kick, Double Roundhouse Kick',
   'Jab, Lead Teep, Jab, Fake Lead Teep',
   'Jab, Rear Swing Kick, Lead Teep',
-  'Teep, Fake Teep, Rear Swing Kick',
   'Jab, Lead Teep, Rear Face Teep',
   'Swing Kick, Fake Swing Kick, Rear Teep',
   'Double Jab, Teep',
-  'Lead Teep, Rear Swing Kick',
-  // Knee Focused
-  'Cross, Rear Knee',
-  'Jab, Switch Knee',
-  'Jab, Cross, Switch Knee',
-  'Left Hook, Rear Knee',
-  'Cross, Hook, Rear Knee',
-  'Lead Teep, Fake Lead Teep, Rear Knee',
-  'Teep, Feint, Knee',
-  // Counters off Blocks and Parries
-  'Parry Jab, Rear Knee',
-  'Parry Cross, Switch Knee',
-  'Shin Block Lead Kick, Lead Knee',
-  'Shin Block Rear Kick, Rear Knee',
-  // Combos Starting with a Kick
-  'Rear Swing Kick, Cross',
-  'Switch Kick, Cross',
-  'Switch Kick, Cross, Hook, Low Kick',
-  'Lead Push Kick, Rear Swing Kick',
-  'Rear Push Kick, Lead Swing Kick',
-  // Longer Combinations
-  'Jab, Cross, Lead Uppercut, Low Kick',
-  'Jab, Cross, Lead Hook to the Body, Rear Roundhouse',
-  'Jab, Cross, Left Knee, Right Elbow',
-  'Lead Uppercut, Cross, Lead Body Hook, Switch Knee, Elbow',
-  'Body Cross, Rear Knee, Rear Elbow',
-  'Inside Low Kick, Double Roundhouse Kick',
-  'Teep, Feint, Knee',
-  'Jab, Cross, Lead Elbow',
-  'Double Jab, Teep',
-  'Jab, Cross, Switch Kick',
-  'Jab, Cross, Hook, Rear Leg Kick',
+  'Rear Swing Kick, Lead Teep',
 ];
 
 const MT_DRILLS = [
@@ -776,6 +827,19 @@ const MT_DRILLS = [
   { name: 'Uppercut Elbow 10-10-20', desc: 'Close-range upward drive — 10 each, 20 alternating' },
   { name: 'Kick Check 10-10-20', desc: 'Lift lead shin to intercept low kick — 10 each leg, 20 alternating' },
   { name: 'Kick Check and Counter', desc: 'Check the low kick, immediately return rear kick — 10 each side' },
+];
+
+// Muay Thai-specific warm-up pool — replaces WARMUPS_FIGHT for MT sessions
+// Prescriptions are assigned dynamically in plan.js based on difficulty
+const WARMUPS_MT = [
+  { name: 'Warm-Up Run',           note: 'Easy controlled pace — just get moving, breathe through the nose' },
+  { name: 'Jump Rope',             note: 'Light pace — single unders, find your rhythm' },
+  { name: 'Kicks, Knees & Teeps Only', note: 'Lower body weapons only — loosen up the hips, no hands' },
+  { name: 'Punches & Elbows Only', note: 'Upper body weapons only — get the hands moving, no kicks' },
+  { name: 'Freestyle',             note: 'Any combos at easy pace — stay loose, stay sharp' },
+  { name: 'Kick Check',            note: 'Lift lead shin to intercept low kick — practice the block each side' },
+  { name: 'Kick',                  note: 'Basic kicks — focus on technique and full hip rotation' },
+  { name: 'Counters',              note: 'Work your counter game — slip, parry, and return' },
 ];
 
 const BJJ_DRILLS = {

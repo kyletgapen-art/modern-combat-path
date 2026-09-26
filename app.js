@@ -24,6 +24,52 @@ const state = {
   customEvents: [],
 };
 
+// ── PT Score Standards ─────────────────────────
+const PT_SCORES = {
+  'txdps-pt': {
+    title: 'TX DPS Physical Fitness Test — Minimum Standards (Male)',
+    note: 'Passing = 60th percentile for 1.5-mile run and 500m row; 70th percentile for 4-minute row.',
+    events: [
+      {
+        name: '1.5 Mile Run',
+        note: 'Lower is better. Minimum passing = 60th percentile.',
+        columns: ['Age', 'Passing (60th%)'],
+        rows: [
+          ['20–24', '11:33'],
+          ['25–29', '11:45'],
+          ['30–34', '12:15'],
+          ['35–39', '12:50'],
+          ['40–44', '13:48'],
+          ['45–49', '14:52'],
+          ['50+',   '15:47'],
+        ],
+      },
+      {
+        name: '500m Row Test (under 250 lbs)',
+        note: 'Lower is better. Minimum passing = 60th percentile.',
+        columns: ['Age', 'Passing (60th%)'],
+        rows: [
+          ['20–29', '1:34'],
+          ['30–39', '1:37'],
+          ['40–49', '1:41'],
+          ['50+',   '1:46'],
+        ],
+      },
+      {
+        name: '4-Minute Row Test (meters rowed)',
+        note: 'Higher is better. Minimum passing = 70th percentile.',
+        columns: ['Age', '< 165 lbs', '165–249 lbs', '250+ lbs'],
+        rows: [
+          ['20–29', '1,049m', '1,091m', '1,146m'],
+          ['30–39', '1,031m', '1,043m', '1,065m'],
+          ['40–49', '1,011m', '1,022m', '1,058m'],
+          ['50+',   '968m',   '981m',   '1,017m'],
+        ],
+      },
+    ],
+  },
+};
+
 // Garage equipment list — loaded from localStorage, shared between single/plan
 let garageEquip = JSON.parse(localStorage.getItem('mc_garage_equip') || '[]');
 
@@ -68,125 +114,50 @@ function showScreen(id) {
   if (el) el.classList.add('active');
   window.scrollTo(0, 0);
   updateTimerVisibility(id);
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.nav === id));
+  if (id === 'home') updateHomeStats();
 }
 
-// ── PT Score Data ───────────────────────────────
-const PT_SCORES = {
-  'army-acft': {
-    label: 'Male, Age 17–21',
-    tables: [
-      { title: 'ACFT', headers: ['Event', 'Min (60 pts)', 'Max (100 pts)'], rows: [
-        ['3 Rep Max Deadlift', '140 lbs', '340 lbs'],
-        ['Standing Power Throw', '4.5 m', '12.5 m'],
-        ['Hand-Release Push-Up', '10 reps', '60 reps'],
-        ['Sprint-Drag-Carry', '3:35', '1:33'],
-        ['Plank', '2:09', '3:40'],
-        ['2-Mile Run', '21:00', '13:22'],
-      ]},
-      { title: 'RPA (Ranger Physical Assessment)', headers: ['Event', 'Standard'], rows: [
-        ['800m Run', 'Pass / Fail'],
-        ['Push-Ups (dead-stop)', '30 reps'],
-        ['100m Sprint', 'Pass / Fail'],
-        ['Sandbag Lifts (40 lb → 68" platform)', '16 reps'],
-        ["Farmer's Carry 50m (2 × 40 lb cans)", 'Pass / Fail'],
-        ['Movement Drill 50m (25m high crawl + 25m rush)', 'Pass / Fail'],
-        ['800m Run (final)', 'Pass / Fail'],
-        ['— 10-min break —', ''],
-        ['4-Mile Run', '32:00 or less'],
-        ['Chin-Ups (strict)', '6 reps minimum'],
-      ]},
-      { title: 'Air Assault PT Standard', headers: ['Event', 'Minimum', 'Standard'], rows: [
-        ['ACFT Total Score', '180 pts', 'All events must pass'],
-        ['12-Mile Ruck March', 'Complete', '3:00:00 time limit'],
-        ['1-Mile Run', 'Complete', 'Required at start of course'],
-      ]},
-    ],
-  },
-  'marine-pft': {
-    label: 'Male, Age 17–20',
-    tables: [
-      { title: 'PFT', headers: ['Event', 'Min', 'Max'], rows: [
-        ['Pull-Ups', '3 reps', '20 reps'],
-        ['Crunches (2 min)', '70 reps', '100 reps'],
-        ['3-Mile Run', '28:00', '18:00'],
-      ]},
-      { title: 'CFT', headers: ['Event', 'Min', 'Max'], rows: [
-        ['Movement to Contact (880m)', '3:27', '2:39'],
-        ['Ammo Can Lifts (30 lb)', '37 reps', '98 reps'],
-        ['Maneuver Under Fire', '3:17', '2:21'],
-      ]},
-      { title: 'RPAT (Raider Selection)', headers: ['Event', 'Minimum', 'Target'], rows: [
-        ['Pull-Ups', '20 reps', '20 reps (max PFT score)'],
-        ['Crunches (2 min)', '100 reps', '100 reps (max PFT score)'],
-        ['3-Mile Run', '18:00', 'Sub-18:00'],
-        ['PFT Total Score', '285 / 300', '300 / 300'],
-      ]},
-      { title: 'MARSOC A&S Screening', headers: ['Event', 'Minimum', 'Standard'], rows: [
-        ['Pull-Ups', '20 reps', 'Max score required'],
-        ['3-Mile Run', '18:00', 'Sub-18:00'],
-        ['500m Swim (any stroke)', '12:00', 'Unassisted'],
-        ['ACFT Score', 'Passing', 'Must meet all event minimums'],
-      ]},
-    ],
-  },
-  'navy-prt': {
-    label: 'Male, Age 17–19',
-    tables: [
-      { title: 'PRT', headers: ['Event', 'Min (Satisfactory)', 'Max (Outstanding)'], rows: [
-        ['Push-Ups (2 min)', '42 reps', '100 reps'],
-        ['Plank', '1:03', '3:30'],
-        ['1.5-Mile Run', '12:51', '8:15'],
-      ]},
-      { title: 'SEAL PST', headers: ['Event', 'Minimum', 'Competitive'], rows: [
-        ['500-yd Swim (CSS)', '12:30', '8:00'],
-        ['Push-Ups (2 min)', '50 reps', '80+ reps'],
-        ['Sit-Ups (2 min)', '50 reps', '80+ reps'],
-        ['Pull-Ups', '10 reps', '15+ reps'],
-        ['1.5-Mile Run', '10:30', '9:30'],
-      ]},
-      { title: 'SWCC PST', headers: ['Event', 'Minimum', 'Competitive'], rows: [
-        ['500-yd Swim (CSS)', '13:00', '10:00'],
-        ['Push-Ups (2 min)', '42 reps', '80+ reps'],
-        ['Sit-Ups (2 min)', '52 reps', '80+ reps'],
-        ['Pull-Ups', '6 reps', '12+ reps'],
-        ['1.5-Mile Run', '11:00', '9:30'],
-      ]},
-    ],
-  },
-  'airforce-fa': {
-    label: 'Male, Age 17–29',
-    tables: [
-      { title: 'Fitness Assessment', headers: ['Event', 'Min (Satisfactory)', 'Max (Excellent)'], rows: [
-        ['Push-Ups (1 min)', '33 reps', '67 reps'],
-        ['Sit-Ups (1 min)', '42 reps', '58 reps'],
-        ['1.5-Mile Run', '13:36', '9:12'],
-      ]},
-      { title: 'AFSPECWAR PAST', headers: ['Event', 'Minimum', 'Competitive'], rows: [
-        ['500m Swim w/ Fins', '12:00', '10:00'],
-        ['Underwater Swim 25m', 'Pass / Fail', '—'],
-        ['Push-Ups (2 min)', '50 reps', '80+ reps'],
-        ['Sit-Ups (2 min)', '50 reps', '80+ reps'],
-        ['Pull-Ups', '10 reps', '15+ reps'],
-        ['1.5-Mile Run', '10:30', '9:30'],
-      ]},
-    ],
-  },
-};
+// ── Home "This month" card ─────────────────────
+function updateHomeStats() {
+  const now = new Date();
+  const prefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-`;
+  const data = getTrackerData();
+  let workouts = 0, rest = 0;
+  Object.keys(data).forEach(k => {
+    if (!k.startsWith(prefix)) return;
+    if (data[k]?.type === 'workout') workouts++;
+    else if (data[k]?.type === 'rest') rest++;
+  });
+  const w = document.getElementById('home-stat-workouts');
+  const r = document.getElementById('home-stat-rest');
+  const m = document.getElementById('home-month-label');
+  if (w) w.textContent = workouts;
+  if (r) r.textContent = rest;
+  if (m) m.textContent = MONTH_NAMES[now.getMonth()];
+}
 
+// ── Scores Panel ───────────────────────────────
 function toggleScoresPanel() {
   const panel = document.getElementById('pt-scores-panel');
+  if (!panel) return;
   if (panel.style.display !== 'none') { panel.style.display = 'none'; return; }
   const data = PT_SCORES[state.selection];
   if (!data) return;
-  let html = `<p style="font-size:0.8rem;color:var(--muted);margin:0.75rem 0 1rem;">${data.label}</p>`;
-  for (const tbl of data.tables) {
-    if (tbl.title) html += `<h3 style="margin:1rem 0 0.5rem;font-size:1rem;">${tbl.title}</h3>`;
-    html += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:0.85rem;">';
-    html += '<thead><tr>' + tbl.headers.map(h => `<th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);color:var(--muted);">${h}</th>`).join('') + '</tr></thead>';
-    html += '<tbody>' + tbl.rows.map(r =>
-      '<tr>' + r.map((c, i) => `<td style="padding:6px 8px;border-bottom:1px solid var(--border);${i > 0 ? 'text-align:center;' : ''}">${c}</td>`).join('') + '</tr>'
-    ).join('') + '</tbody></table></div>';
-  }
+  let html = `<div style="background:rgba(230,57,70,0.05);border:1px solid rgba(230,57,70,0.2);padding:16px 18px;">
+    <div style="font-family:'Courier New',monospace;font-size:0.68rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;">${data.title}</div>
+    <div style="font-size:0.78rem;color:var(--muted);margin-bottom:16px;">${data.note}</div>`;
+  data.events.forEach(ev => {
+    html += `<div style="margin-bottom:16px;">
+      <div style="font-size:0.82rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">${ev.name}</div>
+      <div style="font-size:0.74rem;color:var(--muted);margin-bottom:8px;">${ev.note}</div>
+      <table style="width:100%;border-collapse:collapse;font-size:0.8rem;">
+        <thead><tr>${ev.columns.map(c => `<th style="text-align:left;padding:4px 8px;border-bottom:1px solid rgba(230,57,70,0.2);color:var(--accent);font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;">${c}</th>`).join('')}</tr></thead>
+        <tbody>${ev.rows.map(r => `<tr>${r.map(c => `<td style="padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.05);">${c}</td>`).join('')}</tr>`).join('')}</tbody>
+      </table>
+    </div>`;
+  });
+  html += '</div>';
   panel.innerHTML = html;
   panel.style.display = 'block';
 }
@@ -202,12 +173,12 @@ function selectTest(key) {
   document.getElementById('plan-partner-wrap').style.display = 'none';
   document.getElementById('single-bags-wrap').style.display = 'none';
   document.getElementById('plan-bags-wrap').style.display = 'none';
-  // Show Scores card only for tests that have score data
   const scoresCard = document.getElementById('scores-card');
-  if (scoresCard) scoresCard.style.display = PT_SCORES[key] ? '' : 'none';
-  // Reset scores panel when switching tests
-  const panel = document.getElementById('pt-scores-panel');
-  if (panel) { panel.style.display = 'none'; panel.innerHTML = ''; }
+  if (scoresCard) {
+    scoresCard.style.display = PT_SCORES[key] ? 'block' : 'none';
+    const panel = document.getElementById('pt-scores-panel');
+    if (panel) panel.style.display = 'none';
+  }
   showScreen('plan-options');
 }
 
@@ -228,8 +199,7 @@ function selectGeneral(key) {
   state.mode = 'general';
   state.selection = key;
   const cat = GENERAL_WORKOUTS[key];
-  const titleMap = { 'full-body': 'Full Body' };
-  document.getElementById('plan-options-title').textContent = cat ? cat.name : (titleMap[key] || key);
+  document.getElementById('plan-options-title').textContent = cat ? cat.name : key;
   document.getElementById('plan-options-back').setAttribute('onclick', "showScreen('general-select')");
   // General fitness has no partner option
   document.getElementById('single-partner-wrap').style.display = 'none';
@@ -357,10 +327,26 @@ function renderPlan(plan) {
 
   let html = `<div class="plan-meta">${metaTags}</div>`;
 
+  // Phase progression chart — bar height rises with intensity
+  const usedPhases = [...new Set(plan.weeks.map(w => w.phase))];
+  html += `
+    <div class="phase-strip">
+      <div class="eyebrow">Phase progression</div>
+      <div class="phase-bars">
+        ${plan.weeks.map(w => `
+          <div class="phase-bar" title="Week ${w.weekNum}: ${w.phaseLabel}">
+            <div class="phase-bar-fill ${w.phase}"></div>
+            <div class="phase-bar-label">W${w.weekNum}</div>
+          </div>`).join('')}
+      </div>
+      <div class="phase-legend">${usedPhases.map(p => `<span>${PHASES[p].label}</span>`).join('')}</div>
+    </div>`;
+
   plan.weeks.forEach(week => {
     const badgeClass = week.phase === 'taper' ? 'taper' : week.phase === 'peak' ? 'peak' : '';
+    const openClass = week.weekNum === 1 ? ' open' : '';
     html += `
-      <div class="week-card" id="week-${week.weekNum}">
+      <div class="week-card${openClass}" id="week-${week.weekNum}">
         <div class="week-header" onclick="toggleWeek(${week.weekNum})">
           <div class="week-header-left">
             <div>
@@ -711,4 +697,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') addCustomEvent(); });
   });
+  updateHomeStats();
+
+  // Deep links from the landing page, e.g. app.html#fight
+  const deepLinks = { '#pt': 'pt-select', '#fight': 'fight-select', '#general': 'general-select', '#timer': 'timer', '#log': 'tracker', '#1rm': '1rm' };
+  const target = deepLinks[window.location.hash];
+  if (target === 'tracker') showTracker();
+  else if (target === 'timer') openTimer();
+  else if (target === '1rm') { render1RMScreen(); showScreen('1rm'); }
+  else if (target) showScreen(target);
 });

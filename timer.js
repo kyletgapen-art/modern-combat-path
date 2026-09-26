@@ -12,7 +12,7 @@ const timerState = {
   restSec: 60,
   currentRound: 1,
   phase: 'idle',      // 'idle' | 'work' | 'rest' | 'done'
-  secondsLeft: 0,
+  secondsLeft: 180,
   // Countdown
   cdMin: 3,
   cdSec: 0,
@@ -26,9 +26,30 @@ const timerCfg = {
   cdSec:   { min: 0,  max: 55, step: 5  },
 };
 
-function toggleTimer() {
-  const panel = document.getElementById('timer-panel');
-  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+// Full-screen timer: remember where we came from so Back returns there
+let timerReturnScreen = 'home';
+
+function openTimer() {
+  const active = document.querySelector('.screen.active');
+  const id = active ? active.id.replace('screen-', '') : 'home';
+  if (id !== 'timer') timerReturnScreen = id;
+  showScreen('timer');
+  updateTimerDisplay();
+}
+
+function closeTimer() {
+  showScreen(timerReturnScreen || 'home');
+}
+
+function toggleTimerRun() {
+  if (timerState.running) pauseTimer();
+  else startTimer();
+  updateTimerDisplay();
+}
+
+function skipTimerPhase() {
+  if (timerState.phase === 'idle' || timerState.phase === 'done') return;
+  handleTimerTransition();
 }
 
 function switchTimerMode(mode) {
@@ -68,6 +89,7 @@ function startTimer() {
 function pauseTimer() {
   timerState.running = false;
   clearInterval(timerState.interval);
+  updateTimerDisplay();
 }
 
 function resetTimer() {
@@ -135,8 +157,54 @@ function updateTimerDisplay() {
   const info = document.getElementById('timer-round-info');
   if (timerState.mode === 'round' && timerState.phase !== 'idle' && timerState.phase !== 'done') {
     info.textContent = `Round ${timerState.currentRound} of ${timerState.rounds}`;
+  } else if (timerState.phase === 'done') {
+    info.textContent = timerState.mode === 'round' ? 'All rounds complete' : 'Time!';
   } else {
     info.textContent = '';
+  }
+
+  // Progress ring
+  const ring = document.getElementById('timer-ring');
+  const wrap = document.getElementById('timer-ring-wrap');
+  if (ring && wrap) {
+    const C = 879.6;
+    let total;
+    if (timerState.mode === 'countdown') total = timerState.cdMin * 60 + timerState.cdSec;
+    else total = timerState.phase === 'rest' ? timerState.restSec : timerState.workMin * 60;
+    let offset = 0;
+    if (timerState.phase !== 'idle' && timerState.phase !== 'done' && total > 0) {
+      offset = C * (1 - timerState.secondsLeft / total);
+    }
+    ring.setAttribute('stroke-dashoffset', offset.toFixed(1));
+    wrap.classList.toggle('is-rest', timerState.phase === 'rest');
+    wrap.classList.toggle('is-done', timerState.phase === 'done');
+  }
+
+  // Round markers
+  const dots = document.getElementById('timer-dots');
+  if (dots) {
+    if (timerState.mode === 'round') {
+      let html = '';
+      for (let i = 1; i <= timerState.rounds; i++) {
+        let cls = 'timer-dot';
+        if (timerState.phase === 'done' || (timerState.phase !== 'idle' && i < timerState.currentRound)) cls += ' done';
+        else if (timerState.phase !== 'idle' && i === timerState.currentRound) cls += ' current';
+        html += `<span class="${cls}"></span>`;
+      }
+      dots.innerHTML = html;
+    } else {
+      dots.innerHTML = '';
+    }
+  }
+
+  // Play / pause button
+  const play = document.getElementById('timer-play');
+  const icon = document.getElementById('timer-play-icon');
+  if (play && icon) {
+    play.setAttribute('aria-label', timerState.running ? 'Pause' : 'Start');
+    icon.innerHTML = timerState.running
+      ? '<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>'
+      : '<path d="M8 4l13 8-13 8z"/>';
   }
 }
 
@@ -169,7 +237,7 @@ function beepEnd()   { playTone(440, 0.25); setTimeout(() => playTone(330, 0.25)
 function beepDone()  { playTone(660, 0.2); setTimeout(() => playTone(660, 0.2), 220); setTimeout(() => playTone(880, 0.5), 440); }
 function beepTick()  { playTone(660, 0.08, 0.2); }
 
-// Show/hide timer widget based on current screen
+// Show/hide the floating timer shortcut based on current screen
 function updateTimerVisibility(screenId) {
   const timedScreens = ['workout', 'plan-output', 'customize', 'plan-builder'];
   const widget = document.getElementById('timer-widget');
