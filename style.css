@@ -860,7 +860,7 @@ header {
   backdrop-filter: blur(10px);
   border-top: 1px solid var(--border);
 }
-.bottom-nav-inner { max-width: 800px; height: var(--nav-h); margin: 0 auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.bottom-nav-inner { max-width: 800px; height: var(--nav-h); margin: 0 auto; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
 .nav-item {
   background: none; border: none; color: var(--muted);
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
@@ -869,6 +869,209 @@ header {
 .nav-item svg { width: 22px; height: 22px; }
 .nav-item:hover { color: var(--text); }
 .nav-item.active { color: var(--accent-text); }
+
+/* Focus screens (guided session, workout complete) hide the bottom nav */
+body.focus-mode { padding-bottom: env(safe-area-inset-bottom, 0px); }
+body.focus-mode .bottom-nav { display: none; }
+
+/* ── Buttons: shared helpers ── */
+.action-btn.block { width: 100%; }
+.generate-btn:disabled { opacity: 0.55; cursor: default; filter: none; transform: none; }
+
+/* ── Toast ── */
+.toast {
+  position: fixed; left: 50%; bottom: calc(var(--nav-h) + 20px + env(safe-area-inset-bottom, 0px));
+  transform: translate(-50%, 20px); opacity: 0; pointer-events: none;
+  background: var(--text); color: var(--bg);
+  padding: 12px 20px; border-radius: 12px; font-weight: 600; font-size: 0.95rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4); z-index: 20000;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ── 1. Active plan card (Home) ── */
+.home-plan { border-color: var(--border2); }
+.plan-week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.plan-day { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.plan-day > span { font-size: 0.78rem; font-weight: 600; color: var(--muted); }
+.plan-dot {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 2px solid var(--border2); color: var(--on-accent);
+  display: flex; align-items: center; justify-content: center;
+}
+.plan-dot svg { width: 16px; height: 16px; }
+.plan-dot.rest { border-style: dashed; border-color: var(--border); }
+.plan-dot.done { background: var(--accent); border-color: var(--accent); }
+.plan-dot.next { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(230,57,70,0.2); }
+.plan-progress-text { font-size: 0.9rem; color: var(--muted2); }
+.plan-card-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.plan-card-actions .action-btn:only-child { grid-column: 1 / -1; }
+
+/* Plan screen: done / next markers and per-day start button */
+.day-tag {
+  margin-left: auto; font-family: var(--mono); font-size: 0.68rem; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px;
+}
+.day-tag + .day-expand-icon { margin-left: 8px; }
+.day-tag.done { background: rgba(74,222,128,0.12); color: var(--done); }
+.day-tag.next { background: rgba(230,57,70,0.14); color: var(--accent-text); }
+.day-row.done .day-dot { background: var(--done); }
+.day-row.next .day-row-header { background: var(--surface2); }
+.day-start-btn { align-self: stretch; min-height: 48px; font-size: 1.1rem; margin-top: 4px; }
+
+/* ── 2. Guided session ── */
+#session-root { display: flex; flex-direction: column; gap: 22px; min-height: calc(100vh - 140px); }
+.session-top { display: flex; align-items: center; gap: 12px; }
+.session-exit { width: 44px; padding: 0; flex-shrink: 0; }
+.session-progress { flex-grow: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.session-progress-meta {
+  display: flex; justify-content: space-between; gap: 10px;
+  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+}
+.session-progress-meta span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.session-bar { height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; }
+.session-bar div { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.3s; }
+
+.session-ex { display: flex; flex-direction: column; gap: 10px; }
+.session-rx { font-family: var(--mono); font-size: 0.9rem; font-weight: 700; letter-spacing: 0.08em; color: var(--accent-text); }
+.session-name {
+  font-family: var(--display); font-weight: 800; font-size: clamp(2.6rem, 11vw, 3.6rem);
+  line-height: 0.92; text-transform: uppercase; letter-spacing: 0.01em; overflow-wrap: anywhere;
+}
+.session-note { font-size: 1.05rem; color: var(--muted2); line-height: 1.5; }
+
+.session-sets { display: flex; flex-direction: column; gap: 10px; }
+.set-grid { display: grid; gap: 8px; }
+.set-btn {
+  min-height: 80px; border-radius: 14px;
+  background: var(--surface); border: 1px solid var(--border2); color: var(--text);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  font-family: var(--mono); touch-action: manipulation;
+  transition: background 0.15s, border-color 0.15s;
+}
+.set-btn span { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; }
+.set-btn strong { font-size: 1.6rem; }
+.set-btn:hover { border-color: var(--accent); }
+.set-btn.done { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+
+.session-rest {
+  display: flex; align-items: center; gap: 14px;
+  background: rgba(106,165,247,0.08); border: 1px solid rgba(106,165,247,0.35);
+  border-radius: var(--radius); padding: 14px;
+}
+.session-rest-clock {
+  width: 68px; height: 68px; flex-shrink: 0; border-radius: 50%;
+  border: 5px solid var(--rest); display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-weight: 700; font-size: 1rem;
+}
+.session-rest-text { flex-grow: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.session-rest-text strong { font-family: var(--mono); font-size: 0.8rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--rest-text); }
+.session-rest-text span { font-size: 0.9rem; color: var(--muted2); }
+
+.session-foot { margin-top: auto; display: flex; flex-direction: column; gap: 10px; }
+.session-next {
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px;
+  padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+}
+.session-next .eyebrow { font-size: 0.68rem; }
+.session-next strong { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.session-next-rx { font-family: var(--mono); font-size: 0.8rem; color: var(--accent-text); white-space: nowrap; }
+.session-nav { display: flex; gap: 10px; }
+.session-nav .generate-btn { flex-grow: 1; }
+
+/* ── 3. How-to bottom sheet ── */
+.sheet-backdrop { align-items: flex-end; padding: 0; }
+.sheet {
+  width: 100%; max-width: 640px; max-height: 88vh; overflow-y: auto;
+  background: var(--surface); border: 1px solid var(--border2); border-bottom: none;
+  border-radius: 24px 24px 0 0;
+  padding: 10px 20px calc(24px + env(safe-area-inset-bottom, 0px));
+  animation: sheetUp 0.25s ease;
+}
+@keyframes sheetUp { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+.sheet-handle { width: 44px; height: 5px; border-radius: 3px; background: var(--border2); margin: 0 auto 14px; }
+#howto-body { display: flex; flex-direction: column; gap: 18px; }
+.howto-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.howto-title { font-family: var(--display); font-weight: 800; font-size: 2.3rem; line-height: 0.95; text-transform: uppercase; margin-top: 4px; }
+.howto-rx { font-family: var(--mono); font-size: 0.85rem; color: var(--muted2); margin-top: 6px; }
+.howto-media {
+  aspect-ratio: 16 / 10; border-radius: 16px; overflow: hidden;
+  background: var(--bg); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+}
+.howto-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.howto-placeholder { display: none; flex-direction: column; align-items: center; gap: 8px; color: var(--muted); font-size: 0.95rem; }
+.howto-placeholder svg { width: 40px; height: 40px; }
+.howto-media.empty { border-style: dashed; border-color: var(--border2); }
+.howto-media.empty .howto-placeholder { display: flex; }
+.howto-cues { display: flex; flex-direction: column; gap: 10px; }
+.howto-cue { display: flex; gap: 12px; align-items: flex-start; }
+.howto-cue span { font-family: var(--mono); font-weight: 700; color: var(--accent-text); padding-top: 1px; }
+.howto-cue p { font-size: 1rem; line-height: 1.45; }
+.howto-variations { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.howto-variations div { background: var(--surface2); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; }
+.howto-variations span { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+.howto-variations strong { font-size: 0.95rem; }
+
+/* ── 4. Workout complete ── */
+#complete-root { display: flex; flex-direction: column; gap: 22px; padding-top: 12px; }
+.complete-head { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+.complete-check {
+  width: 88px; height: 88px; border-radius: 50%; background: var(--accent); color: var(--on-accent);
+  display: flex; align-items: center; justify-content: center;
+}
+.complete-check svg { width: 44px; height: 44px; }
+.complete-title { font-family: var(--display); font-weight: 800; font-size: 2.2rem; line-height: 0.95; text-transform: uppercase; }
+.complete-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.complete-stats div { padding: 14px; text-align: center; display: flex; flex-direction: column; gap: 4px; border-right: 1px solid var(--border); }
+.complete-stats div:last-child { border-right: none; }
+.complete-stats strong { font-family: var(--mono); font-size: 1.5rem; }
+.complete-stats span { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+.complete-block { display: flex; flex-direction: column; gap: 10px; }
+.effort-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.effort-btn {
+  min-height: 64px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); color: var(--text);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+}
+.effort-btn strong { font-family: var(--mono); font-size: 1.15rem; }
+.effort-btn span { font-size: 0.72rem; }
+.effort-btn.active { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.complete-actions { display: flex; flex-direction: column; gap: 10px; }
+.complete-hint { font-size: 0.85rem; color: var(--muted); text-align: center; }
+
+/* ── 5. Progress ── */
+#progress-root { display: flex; flex-direction: column; gap: 20px; }
+.progress-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.progress-stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; display: flex; flex-direction: column; gap: 4px; }
+.progress-stat strong { font-family: var(--mono); font-size: 1.7rem; }
+.progress-stat strong.accent { color: var(--accent-text); }
+.progress-stat span { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.progress-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.progress-card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.progress-card-head h3 { font-family: var(--display); font-weight: 700; font-size: 1.3rem; text-transform: uppercase; }
+.progress-card-head span { font-size: 0.85rem; color: var(--muted); }
+.bar-chart { height: 140px; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 8px; align-items: end; }
+.bar-col { height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; }
+.bar-col span { font-family: var(--mono); font-size: 0.72rem; color: var(--muted2); }
+.bar { width: 100%; max-height: calc(100% - 20px); border-radius: 4px 4px 0 0; background: var(--border2); }
+.bar.current { background: var(--accent); }
+.bar-axis { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 0.7rem; color: var(--muted); }
+.progress-empty { font-size: 0.9rem; color: var(--muted); }
+.progress-empty-card { align-items: flex-start; }
+.progress-empty-card p { color: var(--muted2); line-height: 1.5; }
+.baseline-row {
+  display: flex; align-items: center; gap: 12px; padding: 14px 16px; margin-bottom: 8px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+}
+.baseline-name { flex-grow: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.baseline-name strong { font-size: 1rem; }
+.baseline-name span { font-size: 0.82rem; color: var(--muted); }
+.spark { flex-shrink: 0; }
+.spark path { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.baseline-val { text-align: right; min-width: 80px; display: flex; flex-direction: column; gap: 2px; }
+.baseline-val strong { font-family: var(--mono); font-size: 1rem; }
+.baseline-val .up { font-family: var(--mono); font-size: 0.78rem; color: var(--done); }
+.baseline-val .down { font-family: var(--mono); font-size: 0.78rem; color: var(--accent-text); }
 
 /* ── Print / PDF ── */
 .no-print { }

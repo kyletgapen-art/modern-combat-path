@@ -175,6 +175,30 @@ function useEpleyResult(liftKey, value) {
   document.getElementById(`orm-direct-val-${liftKey}`).value = value;
 }
 
+// Dated history of each baseline, so the Progress screen can show trends.
+// Shape: { deadlift: [{ date: '2026-09-26', value: 315 }, ...], mile: [{ date, value: seconds }] }
+function get1RMHistory() {
+  try { return JSON.parse(localStorage.getItem('mc_1rm_history')) || {}; } catch { return {}; }
+}
+
+function record1RMHistory(saved) {
+  const hist = get1RMHistory();
+  const t = new Date();
+  const today = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
+  const values = {};
+  ORM_LIFTS.forEach(l => { if (saved[l.key]?.max) values[l.key] = saved[l.key].max; });
+  if (saved.mile) values.mile = saved.mile.min * 60 + (saved.mile.sec || 0);
+
+  Object.entries(values).forEach(([key, value]) => {
+    const list = hist[key] || [];
+    const last = list[list.length - 1];
+    if (last && last.date === today) last.value = value;          // same day: keep the latest
+    else if (!last || last.value !== value) list.push({ date: today, value });
+    hist[key] = list;
+  });
+  localStorage.setItem('mc_1rm_history', JSON.stringify(hist));
+}
+
 function saveAndContinue1RM() {
   const saved = get1RMData();
   const now = new Date().toLocaleDateString();
@@ -193,6 +217,7 @@ function saveAndContinue1RM() {
   }
 
   save1RMData(saved);
+  record1RMHistory(saved);
 
   const profile = getProfileData();
   const age      = parseInt(document.getElementById('profile-age')?.value);

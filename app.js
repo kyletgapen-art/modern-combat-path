@@ -115,7 +115,10 @@ function showScreen(id) {
   window.scrollTo(0, 0);
   updateTimerVisibility(id);
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.nav === id));
-  if (id === 'home') updateHomeStats();
+  // Guided session + finish screen are focus screens: hide the bottom nav
+  document.body.classList.toggle('focus-mode', id === 'session' || id === 'complete');
+  if (id === 'home') { updateHomeStats(); renderHomePlanCard(); }
+  if (id === 'progress') renderProgress();
 }
 
 // ── Home "This month" card ─────────────────────
@@ -312,6 +315,8 @@ function buildPlan() {
   };
 
   currentPlan = generatePlan(config);
+  currentPlan.id = Date.now();
+  currentPlan.level = state.planLevel;
   renderPlan(currentPlan);
   showScreen('plan-output');
 }
@@ -322,7 +327,7 @@ function renderPlan(plan) {
   const metaTags = [
     plan.totalWeeks + ' weeks',
     plan.daysPerWeek + ' days/week',
-    { easy: 'Easy', average: 'Average', difficult: 'Difficult', 'very-difficult': 'Very Difficult' }[state.planLevel] || capitalize(state.planLevel),
+    { easy: 'Easy', average: 'Average', difficult: 'Difficult', 'very-difficult': 'Very Difficult' }[plan.level || state.planLevel] || capitalize(plan.level || state.planLevel),
   ].filter(Boolean).map(v => `<span class="meta-tag">${v}</span>`).join('');
 
   let html = `<div class="plan-meta">${metaTags}</div>`;
@@ -367,6 +372,7 @@ function renderPlan(plan) {
   });
 
   document.getElementById('plan-output').innerHTML = html;
+  decoratePlanOutput(plan);
 }
 
 function renderDayRow(day, weekNum, dayIndex) {
@@ -700,7 +706,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateHomeStats();
 
   // Deep links from the landing page, e.g. app.html#fight
-  const deepLinks = { '#pt': 'pt-select', '#fight': 'fight-select', '#general': 'general-select', '#timer': 'timer', '#log': 'tracker', '#1rm': '1rm' };
+  const deepLinks = { '#pt': 'pt-select', '#fight': 'fight-select', '#general': 'general-select', '#timer': 'timer', '#log': 'tracker', '#1rm': '1rm', '#progress': 'progress' };
   const target = deepLinks[window.location.hash];
   if (target === 'tracker') showTracker();
   else if (target === 'timer') openTimer();
