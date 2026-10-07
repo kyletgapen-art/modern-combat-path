@@ -443,6 +443,44 @@ function setSessionEffort(n) {
   });
 }
 
+// Turns one exercise into a workout-log row
+function toLogExercise(it, sets) {
+  const repsMatch = String(it.prescription).match(/[×x]\s*(\d+)/);
+  const hasSetsReps = /^\s*\d+\s*[×x]\s*\d+/.test(it.prescription) && repsMatch && !/min|sec|m\b/i.test(it.prescription);
+  return {
+    // Timed or distance work keeps its prescription in the name so nothing is lost
+    name: hasSetsReps || !it.prescription ? it.name : `${it.name} — ${it.prescription}`,
+    sets: String(sets),
+    reps: hasSetsReps ? repsMatch[1] : '',
+  };
+}
+
+// "Add to Workout Log" on the workout screen — saves the workout as shown, no guided session needed
+function addWorkoutToLog() {
+  const items = readSectionsFromDom(document.getElementById('workout-output')).filter(it => it.name);
+  if (!items.length) return;
+  const data = getTrackerData();
+  const key = todayKey();
+  const entry = data[key] || {};
+  entry.type = 'workout';
+  entry.exercises = entry.exercises || [];
+  items.forEach(it => entry.exercises.push(toLogExercise(it, parseSetCount(it.prescription))));
+
+  const title = document.getElementById('workout-title')?.textContent || 'Workout';
+  entry.notes = entry.notes ? entry.notes + '\n' + title : title;
+  data[key] = entry;
+  saveTrackerData(data);
+
+  const btn = document.getElementById('add-to-log-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '✓ Added to log'; }
+  showToast("Added to today's workout log");
+}
+
+function resetAddToLogBtn() {
+  const btn = document.getElementById('add-to-log-btn');
+  if (btn) { btn.disabled = false; btn.textContent = 'Add to Workout Log'; }
+}
+
 function saveSessionToLog() {
   if (!session) return;
   const notes = document.getElementById('complete-notes')?.value.trim() || '';
@@ -453,15 +491,7 @@ function saveSessionToLog() {
   entry.exercises = entry.exercises || [];
 
   session.items.forEach(it => {
-    const setsDone = it.done.filter(Boolean).length;
-    const repsMatch = String(it.prescription).match(/[×x]\s*(\d+)/);
-    const hasSetsReps = /^\s*\d+\s*[×x]\s*\d+/.test(it.prescription) && repsMatch && !/min|sec|m\b/i.test(it.prescription);
-    entry.exercises.push({
-      // Timed or distance work keeps its prescription in the name so nothing is lost
-      name: hasSetsReps || !it.prescription ? it.name : `${it.name} — ${it.prescription}`,
-      sets: String(setsDone || it.sets),
-      reps: hasSetsReps ? repsMatch[1] : '',
-    });
+    entry.exercises.push(toLogExercise(it, it.done.filter(Boolean).length || it.sets));
   });
 
   const line = `${session.title} — effort ${session.effort}/5 (${EFFORT_LABELS[session.effort - 1]})${notes ? '. ' + notes : ''}`;

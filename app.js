@@ -294,6 +294,7 @@ function generateSingleWorkout() {
   const metaHTML = Object.values(metaTags).map(v => `<span class="meta-tag">${v}</span>`).join('');
   document.getElementById('workout-output').innerHTML =
     `<div class="workout-meta">${metaHTML}</div>` + renderWorkoutSections(workout.sections);
+  resetAddToLogBtn();
 
   showScreen('workout');
 }

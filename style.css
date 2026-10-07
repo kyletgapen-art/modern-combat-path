@@ -877,6 +877,7 @@ body.focus-mode .bottom-nav { display: none; }
 /* ── Buttons: shared helpers ── */
 .action-btn.block { width: 100%; }
 .generate-btn:disabled { opacity: 0.55; cursor: default; filter: none; transform: none; }
+.action-btn:disabled { opacity: 0.6; cursor: default; }
 
 /* ── Toast ── */
 .toast {
