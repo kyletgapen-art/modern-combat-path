@@ -197,6 +197,7 @@
     @media (max-width: 900px) { .focus-grid { grid-template-columns: 1fr; } }
     .focus { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 22px 26px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; transition: border-color 0.2s; }
     .focus:hover { border-color: var(--accent); }
+    .focus-wide { grid-column: 1 / -1; }
     .focus strong { font-family: var(--display); font-weight: 700; font-size: 1.6rem; text-transform: uppercase; letter-spacing: 0.03em; display: block; }
     .focus span { font-size: 0.95rem; color: var(--muted); }
     .focus svg { width: 22px; height: 22px; color: var(--muted); flex-shrink: 0; }
@@ -244,7 +245,7 @@
     <div>Fight disciplines <b>03</b></div>
   </div>
   <div class="hud hud-r" aria-hidden="true">
-    <div>Focus areas <b>09</b></div>
+    <div>Focus areas <b>10</b></div>
     <div>Max plan weeks <b>08</b></div>
   </div>
 
@@ -276,7 +277,7 @@
   <section class="stats" aria-label="At a glance">
     <div class="stat"><strong>9</strong><span>PT tests incl. custom</span></div>
     <div class="stat"><strong>3</strong><span>Fight disciplines</span></div>
-    <div class="stat"><strong>9</strong><span>Fitness focus areas</span></div>
+    <div class="stat"><strong>10</strong><span>Fitness focus areas</span></div>
     <div class="stat"><strong>8</strong><span>Week max plans</span></div>
     <div class="stat"><strong>5</strong><span>Training phases</span></div>
   </section>
@@ -321,7 +322,7 @@
       <a class="card" href="app.html#fight">
         <span class="tag">MT</span>
         <h3>Muay Thai</h3>
-        <p>The art of eight limbs. Combo rounds, 10-10-20 kick, knee and elbow drills, and shadowboxing.</p>
+        <p>The art of eight limbs. 600+ combos built from punches, elbows, knees and kicks, plus teep and kick-check drills and shadowboxing.</p>
       </a>
       <a class="card" href="app.html#fight">
         <span class="tag">BJJ</span>
@@ -343,7 +344,7 @@
         <div class="eyebrow">03 · General Fitness</div>
         <h2 class="big">Every goal covered.</h2>
       </div>
-      <p class="lede">Nine focus areas. Sets and reps scale to your level, and exercises filter to the equipment you actually have.</p>
+      <p class="lede">Ten focus areas. Sets and reps scale to your level, and exercises filter to the equipment you actually have.</p>
     </div>
     <div class="focus-grid">
       <a class="focus" href="app.html#general"><div><strong>Squat</strong><span>Squat patterns &amp; variations</span></div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></a>
@@ -355,6 +356,7 @@
       <a class="focus" href="app.html#general"><div><strong>Conditioning</strong><span>HIIT · CrossFit · HYROX</span></div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></a>
       <a class="focus" href="app.html#general"><div><strong>Track Day</strong><span>Cardio · Plyometrics · Mobility</span></div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></a>
       <a class="focus" href="app.html#general"><div><strong>Flow State</strong><span>Yoga · Pilates</span></div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></a>
+      <a class="focus focus-wide" href="app.html#general"><div><strong>Specialty</strong><span>Low-impact · Steady pace · Extra rest</span></div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></a>
     </div>
   </section>
 
@@ -369,7 +371,7 @@
     <div class="cards">
       <div class="card small"><span class="tag">PLAN</span><h3>Up to 8-week plans</h3><p>Foundation, Build, Power, Peak and Taper. Volume, intensity and rest adjust every phase.</p></div>
       <div class="card small"><span class="tag">TIMER</span><h3>Round timer</h3><p>Round and countdown modes with audio cues for work, rest and the final seconds.</p></div>
-      <div class="card small"><span class="tag">LOG</span><h3>Workout log</h3><p>A calendar to log workout and rest days, exercises, sets, reps and notes.</p></div>
+      <div class="card small"><span class="tag">LOG</span><h3>Workout log</h3><p>A calendar to log workout and rest days, exercises, sets, reps and notes. Save any generated workout in one tap.</p></div>
       <div class="card small"><span class="tag">SWAP</span><h3>Swap any exercise</h3><p>Tap refresh on any row for a new exercise from the same pool. Adjust sets and reps in place.</p></div>
       <div class="card small"><span class="tag">1RM</span><h3>Baselines &amp; pacing</h3><p>Enter or estimate your 1RM and mile time for working weights and run pace targets.</p></div>
       <div class="card small"><span class="tag">PDF</span><h3>Save as PDF</h3><p>Print a full plan or a single session to take to the gym.</p></div>

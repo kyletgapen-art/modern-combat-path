@@ -14,6 +14,8 @@
   --rest: #6AA5F7;
   --rest-text: #8DBBFA;
   --done: #4ADE80;
+  --warn: #F2B544;
+  --warn-bg: #2A2112;
   --text: #F4EEEC;
   --muted: #A8999A;
   --muted2: #C9BCBD;
@@ -635,6 +637,26 @@ header {
   border-radius: 10px;
   padding: 10px 14px;
   margin-top: 4px;
+}
+
+/* Health / safety note above a workout (Specialty) */
+.workout-notice {
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--text);
+  background: var(--warn-bg);
+  border: 1px solid var(--warn);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin: 4px 0 16px;
+}
+.workout-notice strong {
+  display: block;
+  color: var(--warn);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
 }
 
 /* ── 1RM Assessment ── */

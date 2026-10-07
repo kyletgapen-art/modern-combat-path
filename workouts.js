@@ -2014,7 +2014,44 @@ const GENERAL_WORKOUTS = {
     ],
   },
 
+  // Low-impact category (built for people with myasthenia gravis).
+  // Prescriptions are set by scaleSpecialtyRx in plan.js from each move's `kind`:
+  //   reps · each (reps per side) · hold · holdEach (hold per side) · steps
+  specialty: {
+    name: "Specialty",
+    beginner: [
+      { name: "Step-up", note: "Use a low step and hold a rail or wall for balance", kind: "each", equip: "bw" },
+      { name: "Bodyweight Squat", note: "Sit back to a comfortable depth, chest tall", kind: "reps", equip: "bw" },
+      { name: "Chair Squat", note: "Lower until you touch the chair, then stand — use your arms if needed", kind: "reps", equip: "bw" },
+      { name: "Wall Sit", note: "Back flat on the wall — only slide as low as feels steady", kind: "hold", equip: "bw" },
+      { name: "Glute Bridge", note: "Squeeze your glutes to lift the hips, lower slowly", kind: "reps", equip: "bw" },
+      { name: "Calf Raise", note: "Hold a counter or chair, rise onto your toes, lower slowly", kind: "reps", equip: "bw" },
+      { name: "Lunge", note: "Short step forward — hold a wall or chair if balance is off", kind: "each", equip: "bw" },
+      { name: "Reverse Lunge", note: "Step back gently, front knee stays over the ankle", kind: "each", equip: "bw" },
+      { name: "Sit-to-Stand", note: "From a sturdy chair, stand all the way up, sit down with control", kind: "reps", equip: "bw" },
+      { name: "Wall Push-up", note: "Hands on the wall at shoulder height, body in a straight line", kind: "reps", equip: "bw" },
+      { name: "Incline Push-up", note: "Hands on a counter or sturdy table, lower your chest toward it", kind: "reps", equip: "bw" },
+      { name: "Knee Push-up", note: "On your knees, lower with control — stop the set before form fades", kind: "reps", equip: "bw" },
+      { name: "Bird Dog", note: "On hands and knees, reach opposite arm and leg, keep hips level", kind: "each", equip: "bw" },
+      { name: "Dead Bug", note: "On your back, slowly lower opposite arm and leg, low back stays down", kind: "each", equip: "bw" },
+      { name: "Side-lying Leg Raise", note: "Lie on your side, lift the top leg slowly, toes face forward", kind: "each", equip: "bw" },
+      { name: "Standing Leg Raise", note: "Hold a chair, lift the leg to the front or side, slow and controlled", kind: "each", equip: "bw" },
+      { name: "Heel-to-Toe Walk", note: "Walk a straight line, heel touching toe — stay near a wall", kind: "steps", equip: "bw" },
+      { name: "Single-leg Stand", note: "Hold a chair lightly, lift one foot, eyes forward", kind: "holdEach", equip: "bw" },
+      { name: "Plank", note: "Forearms down, body straight — drop to your knees if needed", kind: "hold", equip: "bw" },
+      { name: "Side Plank", note: "Start with forearm and knees down, lift the hips", kind: "holdEach", equip: "bw" },
+    ],
+  },
+
 };
+
+// Specialty warm-up — always both, in this order. Minutes are set by level in plan.js.
+const WARMUPS_SPECIALTY = [
+  { name: "Walking", note: "Easy, comfortable pace on a flat surface", prescription: "4 min" },
+  { name: "Marching in Place", note: "Lift the knees gently — hold a counter if needed", prescription: "4 min" },
+];
+
+const SPECIALTY_NOTICE = "Stop if you feel unusual weakness, double vision, drooping eyelids, or trouble breathing or swallowing. Check with your doctor before starting a new exercise program.";
 
 // ─── FIGHT NIGHT LIBRARIES ────────────────────────────────────────
 

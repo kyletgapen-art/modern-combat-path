@@ -293,7 +293,7 @@ function generateSingleWorkout() {
 
   const metaHTML = Object.values(metaTags).map(v => `<span class="meta-tag">${v}</span>`).join('');
   document.getElementById('workout-output').innerHTML =
-    `<div class="workout-meta">${metaHTML}</div>` + renderWorkoutSections(workout.sections);
+    `<div class="workout-meta">${metaHTML}</div>` + renderNotice(workout.notice) + renderWorkoutSections(workout.sections);
   resetAddToLogBtn();
 
   showScreen('workout');
@@ -403,6 +403,7 @@ function renderDayRow(day, weekNum, dayIndex) {
       </div>
       <div class="day-workout">
         ${phaseNote}
+        ${renderNotice(day.workout && day.workout.notice)}
         ${workoutHTML}
       </div>
     </div>`;
@@ -584,6 +585,7 @@ const WARMUP_POOL_MAP = {
   'warmup:core':         () => WARMUPS_CORE,
   'warmup:conditioning': () => WARMUPS_CONDITIONING,
   'warmup:track-day':    () => WARMUPS_TRACK,
+  'warmup:specialty':    () => WARMUPS_SPECIALTY,
   'warmup:fight':        () => WARMUPS_FIGHT,
   'warmup:pt':           () => WARMUPS_CONDITIONING,
   'warmup:general':      () => WARMUPS_FIGHT,
@@ -642,6 +644,11 @@ function adjustPrescription(btn, delta, type) {
   rxEl.textContent = text;
   row.classList.add('row-adjusted');
   setTimeout(() => row.classList.remove('row-adjusted'), 400);
+}
+
+// Health / safety note shown above a workout (e.g. Specialty)
+function renderNotice(text) {
+  return text ? `<div class="workout-notice" role="note"><strong>Health note</strong>${text}</div>` : '';
 }
 
 // ── Render workout sections with refresh + adjust ──

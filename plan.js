@@ -277,7 +277,31 @@ function getWarmupPool(selection) {
   if (selection === 'core') return WARMUPS_CORE;
   if (selection === 'conditioning') return WARMUPS_CONDITIONING;
   if (selection === 'track-day') return WARMUPS_TRACK;
+  if (selection === 'specialty') return WARMUPS_SPECIALTY;
   return WARMUPS_LOWER;
+}
+
+// Specialty: fewer reps, more sets, long rest between sets
+function scaleSpecialtyRx(ex, level) {
+  const s = {
+    easy:             { sets: 3, reps: '3–5', hold: 10, steps: 10, rest: 90 },
+    average:          { sets: 4, reps: '4–6', hold: 15, steps: 10, rest: 90 },
+    difficult:        { sets: 5, reps: '5–6', hold: 15, steps: 15, rest: 75 },
+    'very-difficult': { sets: 6, reps: '5–8', hold: 20, steps: 20, rest: 60 },
+  }[level] || { sets: 3, reps: '3–5', hold: 10, steps: 10, rest: 90 };
+  const work = {
+    reps:     `${s.reps} reps`,
+    each:     `${s.reps} each side`,
+    hold:     `${s.hold} sec hold`,
+    holdEach: `${s.hold} sec hold each side`,
+    steps:    `${s.steps} steps`,
+  }[ex.kind] || `${s.reps} reps`;
+  return `${s.sets} × ${work} · ${s.rest} sec rest`;
+}
+
+function specialtyWarmup(level) {
+  const mins = { easy: 3, average: 4, difficult: 5, 'very-difficult': 5 }[level] || 4;
+  return WARMUPS_SPECIALTY.map(w => ({ ...w, prescription: `${mins} min` }));
 }
 
 const STRENGTH_CATS = ['squat', 'hinge', 'push', 'pull', 'core'];
@@ -287,6 +311,8 @@ function scalePrescription(ex, level, selection) {
 
   // Flow State — yoga/pilates prescriptions are kept exactly as written
   if (selection === 'flow-state') return ex.prescription;
+
+  if (selection === 'specialty') return scaleSpecialtyRx(ex, level);
 
   // Strength categories: override sets × reps based on difficulty
   if (STRENGTH_CATS.includes(selection)) {
@@ -403,11 +429,13 @@ function buildGeneralDay(selection, phase, config) {
   }
 
   const warmupPool = getWarmupPool(selection);
+  const isSpecialty = selection === 'specialty';
   return {
     title: heading,
     phaseNote: phase.theme,
+    notice: isSpecialty ? SPECIALTY_NOTICE : '',
     sections: [
-      { heading: 'Warm-Up', items: pickRandom([...warmupPool], 2), poolKey: `warmup:${selection}` },
+      { heading: 'Warm-Up', items: isSpecialty ? specialtyWarmup(level) : pickRandom([...warmupPool], 2), poolKey: `warmup:${selection}` },
       { heading: heading, items: exercises, poolKey: mainKey },
     ],
   };
